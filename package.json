@@ -1,0 +1,12 @@
+{
+  "name": "hirable-bot",
+  "version": "0.0.1",
+  "description": "I am hungry",
+  "main": "app.js",
+  "author": "Scotch",
+  "dependencies": {
+    "express": "latest",
+    "request": "latest",
+    "cheerio": "latest"
+  }
+}
