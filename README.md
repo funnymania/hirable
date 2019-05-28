@@ -37,9 +37,9 @@ via email, too.
 
 Amuse your friends with your new, shiny offer! 
 
-NO MONEY BACK GUARANTEE
-EXTEND AT YOUR OWN RISK
-AND MAYBE SUBMIT A PR
+NO MONEY BACK GUARANTEE  
+EXTEND AT YOUR OWN RISK  
+AND MAYBE SUBMIT A PR  
 
 # Also
 
