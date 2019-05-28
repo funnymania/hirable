@@ -1,2 +1,6 @@
 /node_modules
-jobs.json
+
+jobsRipe.json
+jobsRotten.json
+
+userEmail.txt

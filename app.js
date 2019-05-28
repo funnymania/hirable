@@ -6,8 +6,24 @@ const express = require('express')
 const cheerio = require('cheerio')
 const app = express()
 
-// Try to have all scraping run on separate threads.
+let userEmail
+
+fs.readFile('userEmail.txt', 'utf8', (err, content) => {
+  userEmail = content
+})
+
+// Gimme everything.
 app.get('/', (req, res) => {
+  twitter(req, res)
+  google(req, res)
+})
+
+app.get('/twitter', (req, res) => {
+  twitter(req, res)
+})
+
+// Big boys.
+function twitter(req, res) {
   let url = 'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team=&location=careers-twitter%3Alocation%2Fseattle-wa'
   let jobRecording = []
 
@@ -25,7 +41,7 @@ app.get('/', (req, res) => {
             || jobTitle.includes('developer')
             || jobTitle.includes('Developer')
           ) {
-            let jobDesc = $(el).children('.job-search-content > p').text()
+            let jobDesc = $(el).children('.job-search-content').text().trim()
             jobRecording.push({
               title: jobTitle,
               desc: jobDesc
@@ -39,11 +55,6 @@ app.get('/', (req, res) => {
       if (!error) {
         let $ = cheerio.load(html)
 
-        // $('.load-more.js-load-more').trigger('click')
-
-        // request.post()
-        // delay 1 second
-
         let jobList = $('.col.description')
           .each((i, el) => {
             let jobTitle = $(el).children('.job-search-title').text()
@@ -54,7 +65,7 @@ app.get('/', (req, res) => {
               || jobTitle.includes('developer')
               || jobTitle.includes('Developer')
             ) {
-              let jobDesc = $(el).children('.job-search-content > p').text()
+              let jobDesc = $(el).children('.job-search-content').text().trim()
               jobRecording.push({
                 title: jobTitle,
                 desc: jobDesc
@@ -63,18 +74,21 @@ app.get('/', (req, res) => {
           })
       }
 
-      fs.writeFile('jobs.json', JSON.stringify(jobRecording, null, 4), (err) => {
+      // TODO: Write 'jobsRipe' to 'jobsRotten'...
+
+      // Overwrite new 'jobsRipe'
+      fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
         console.log('Jobs secured. Please pass \'Go.\'')
       })
 
       res.send('Check console')
     })
+  }).then(() => {
+    // TODO: run diff on the two files!
+
+    // TODO: if there is a difference, alert user of that difference,
+    //    preferably via email. 
   })
-})
-
-// Big boys.
-function twitter(req, res) {
-
 }
 
 function google(req, res) {

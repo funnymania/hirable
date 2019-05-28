@@ -19,7 +19,11 @@ Now that's what I call Hirable!
 Every 3 minutes, the site(s) are scraped, and you are alerted
 that your time has come! 
 
-You can find the results in jobs.json
+You can find the results in relevant subFolders for each listing
+successfully scraped. 
+
+Place your email in 'userEmail.txt' if you would like to be informed
+via email, too. 
 
 Amuse your friends with your new, shiny offer! 
 
@@ -29,5 +33,8 @@ AND MAYBE SUBMIT A PR
 
 # Also
 
+Developed on WSL.
+
 Some sites actually have scraping APIs for you to play around 
 with, so, feel free to look into that, too. 
+
