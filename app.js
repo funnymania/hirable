@@ -6,6 +6,8 @@ const express = require('express')
 const cheerio = require('cheerio')
 const app = express()
 
+const jsonDiff = require('./diff_plugin/json-diff')
+
 let userEmail
 
 // Read user's email
@@ -23,7 +25,7 @@ function theGrandLoop(req, res, ...unicorns) {
 
     console.log('A scrape completed.')
 
-    interval = (10 * 1000) * (1 + Math.random())
+    interval = (30 * 1000) * (1 + Math.random())
     theGrandLoop(req, res, ...unicorns)
   }, interval)
 }
@@ -106,14 +108,23 @@ function twitter(req, res) {
           }
         })
       })
-
-      console.log('Twitter updated!')
     })
   }).then(() => {
-    // TODO: run diff on the two files!
+    // Pass file contents as js objects
+    let ripe, rotten;
+    fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
+      ripe = JSON.parse(content)
+      fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content) => {
+        rotten = JSON.parse(content)
+        jsonDiff.jsonDiff(ripe, rotten)
+      })
+    })
 
     // TODO: if there is a difference, alert user of that difference,
     //    preferably via email. 
+
+    console.log('Twitter updated!')
+
   })
 }
 
