@@ -9,7 +9,7 @@ job posting that has been re-posted to linkedin / whereever?
 Want to actually be alerted when an actual new job from Twitter
 pops up? :)
 
-Now that's what I call Hirable!
+*NOW that's what I call* **Hirable**!
 
 # Current Progress
 
