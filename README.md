@@ -21,10 +21,10 @@ but not very robust because:
 3. Not tested extensively for bugs
 
 # Instructions
-
-`npm i
-
-node app.js`
+```
+npm i
+node app.js
+```
 
 Every 30-60 seconds, the site(s) are scraped, and you are alerted
 that your time has come! 
