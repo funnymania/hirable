@@ -1,6 +1,7 @@
 const http = require('http')
 const fs = require('fs')
 const request = require('request')
+const rp = require('request-promise-native')
 const express = require('express')
 const cheerio = require('cheerio')
 const app = express()
@@ -10,7 +11,7 @@ app.get('/', (req, res) => {
   let url = 'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team=&location=careers-twitter%3Alocation%2Fseattle-wa'
   let jobRecording = []
 
-  request(url, (error, response, html) => {
+  rp(url, (error, response, html) => {
     if (!error) {
       let $ = cheerio.load(html)
 
@@ -32,42 +33,42 @@ app.get('/', (req, res) => {
           }
         })
     }
+  }).then(() => {
+    url = 'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team=&location=careers-twitter%3Alocation%2Fseattle-wa&start=10'
+    rp(url, (error, response, html) => {
+      if (!error) {
+        let $ = cheerio.load(html)
 
-    fs.writeFile('jobs.json', JSON.stringify(jobRecording, null, 4), (err) => {
-      console.log('Jobs secured. Please pass \'Go.\'')
+        // $('.load-more.js-load-more').trigger('click')
+
+        // request.post()
+        // delay 1 second
+
+        let jobList = $('.col.description')
+          .each((i, el) => {
+            let jobTitle = $(el).children('.job-search-title').text()
+
+            if (
+              jobTitle.includes('engineer')
+              || jobTitle.includes('Engineer')
+              || jobTitle.includes('developer')
+              || jobTitle.includes('Developer')
+            ) {
+              let jobDesc = $(el).children('.job-search-content > p').text()
+              jobRecording.push({
+                title: jobTitle,
+                desc: jobDesc
+              })
+            }
+          })
+      }
+
+      fs.writeFile('jobs.json', JSON.stringify(jobRecording, null, 4), (err) => {
+        console.log('Jobs secured. Please pass \'Go.\'')
+      })
+
+      res.send('Check console')
     })
-
-    res.send('Check console')
-  })
-
-  url = 'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team=&location=careers-twitter%3Alocation%2Fseattle-wa&start=10'
-  request(url, (error, response, html) => {
-    if (!error) {
-      let $ = cheerio.load(html)
-
-      // $('.load-more.js-load-more').trigger('click')
-
-      // request.post()
-      // delay 1 second
-
-      let jobList = $('.col.description')
-        .each((i, el) => {
-          let jobTitle = $(el).children('.job-search-title').text()
-
-          if (
-            jobTitle.includes('engineer')
-            || jobTitle.includes('Engineer')
-            || jobTitle.includes('developer')
-            || jobTitle.includes('Developer')
-          ) {
-            let jobDesc = $(el).children('.job-search-content > p').text()
-            jobRecording.push({
-              title: jobTitle,
-              desc: jobDesc
-            })
-          }
-        })
-    }
   })
 })
 

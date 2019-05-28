@@ -19,6 +19,8 @@ Now that's what I call Hirable!
 Every 3 minutes, the site(s) are scraped, and you are alerted
 that your time has come! 
 
+You can find the results in jobs.json
+
 Amuse your friends with your new, shiny offer! 
 
 NO MONEY BACK GUARANTEE
