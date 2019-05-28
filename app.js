@@ -8,19 +8,38 @@ const app = express()
 
 let userEmail
 
+// Read user's email
 fs.readFile('userEmail.txt', 'utf8', (err, content) => {
   userEmail = content
 })
 
+function theGrandLoop(req, res, ...unicorns) {
+  let interval = (30 * 1000) * (1 + Math.random())
+
+  setTimeout((req, res) => {
+    unicorns.forEach((el) => {
+      el(req, res)
+    })
+
+    console.log('A scrape completed.')
+
+    interval = (10 * 1000) * (1 + Math.random())
+    theGrandLoop(req, res, ...unicorns)
+  }, interval)
+}
+
 // Gimme everything.
 app.get('/', (req, res) => {
-  twitter(req, res)
-  google(req, res)
+  theGrandLoop(
+    req,
+    res,
+    twitter,
+    google
+  )
 })
 
-app.get('/twitter', (req, res) => {
-  twitter(req, res)
-})
+app.get('/twitter', (req, res) => theGrandLoop(req, res, twitter))
+app.get('/google', (req, res) => theGrandLoop(req, res, google))
 
 // Big boys.
 function twitter(req, res) {
@@ -74,14 +93,21 @@ function twitter(req, res) {
           })
       }
 
-      // TODO: Write 'jobsRipe' to 'jobsRotten'...
-
-      // Overwrite new 'jobsRipe'
-      fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-        console.log('Jobs secured. Please pass \'Go.\'')
+      // TODO: Topple pyramid of doom into something else... 
+      // Write 'jobsRipe' to 'jobsRotten'...
+      let twitterContent
+      fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
+        fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
+          if (!err) {
+            // Overwrite new 'jobsRipe'
+            fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+              console.log('Jobs secured. Please pass \'Go.\'')
+            })
+          }
+        })
       })
 
-      res.send('Check console')
+      console.log('Twitter updated!')
     })
   }).then(() => {
     // TODO: run diff on the two files!

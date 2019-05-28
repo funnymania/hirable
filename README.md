@@ -16,13 +16,13 @@ Now that's what I call Hirable!
 `npm i`
 `node app.js`
 
-Every 3 minutes, the site(s) are scraped, and you are alerted
+Every 30-60 seconds, the site(s) are scraped, and you are alerted
 that your time has come! 
 
 You can find the results in relevant subFolders for each listing
 successfully scraped. 
 
-Place your email in 'userEmail.txt' if you would like to be informed
+Place only your email in 'userEmail.txt' if you would like to be informed
 via email, too. 
 
 Amuse your friends with your new, shiny offer! 
