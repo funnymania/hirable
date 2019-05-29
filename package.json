@@ -5,9 +5,10 @@
   "main": "app.js",
   "author": "Scotch",
   "dependencies": {
-    "express": "latest",
-    "request": "latest",
     "cheerio": "latest",
+    "express": "latest",
+    "nodemailer": "^6.2.1",
+    "request": "latest",
     "request-promise-native": "latest"
   }
 }

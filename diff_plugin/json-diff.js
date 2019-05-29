@@ -4,7 +4,6 @@ function jsonDiff(one, two) {
 
   one.forEach((el1) => {
     for (let i = two.length - 1; i > -1; i--) {
-      console.log(two[i].title)
       if (el1.title == two[i].title
         && el1.desc == two[i].desc
       ) {
@@ -22,14 +21,26 @@ function jsonDiff(one, two) {
 
   // TODO: Report newList.
   if (!newList.length == 0) {
-
+    return {
+      code: 2,
+      msg: 'New Jobs!',
+      jobs: newList
+    }
   }
 
   // TODO: Report jobs that are now no longer fresh.
   if (two.length != 0) {
-
+    return {
+      code: 1,
+      msg: 'The following jobs are no longer fresh',
+      jobs: two
+    }
   } else {
-    console.log('No new jobs have come up!')
+    return {
+      code: 0,
+      msg: 'No new jobs have come up!',
+      jobs: two
+    }
   }
 }
 

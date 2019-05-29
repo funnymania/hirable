@@ -17,7 +17,7 @@ Just thought I would put this out there since it is functioning,
 but not very robust because:
 
 1. Only working on Twitter currently, and only using Seattle as a location
-2. Emailing functionality isn't in yet
+2. Emailing functionality specifically for Gmail, and requiring user to turn on access to 'less secure apps'
 3. Not tested extensively for bugs
 
 # Instructions
