@@ -10,35 +10,31 @@ const app = express()
 const jsonDiff = require('./diff_plugin/json-diff')
 
 let userEmail, userData;
-
+let transporter, mailOpts;
 // Read user's email
 fs.readFile('userEmail.txt', 'utf8', (err, content) => {
   userEmail = content
+  fs.readFile('userData.txt', 'utf8', (err, content) => {
+    userData = content
+
+    mailOpts = {
+      from: userEmail,
+      to: userEmail,
+      subject: 'Yayayaya', // TODO: dynamic generation on diffing
+      html: '<p>I amth the prawnsM</p>'
+    }
+
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: userEmail,
+        pass: userData
+      }
+    })
+  })
 })
 
-// Read user's data
-fs.readFile('userData.txt', 'utf8', (err, content) => {
-  userData = content
-})
-
-let transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: userEmail,
-    pass: userData
-  }
-})
-
-let mailOpts = {
-  from: userEmail,
-  to: userEmail,
-  subject: 'Yayayaya', // TODO: dynamic generation on diffing
-  html: '<p>I amth the prawnsM</p>'
-}
-
-function theGrandLoop(req, res, ...unicorns) {
-  let interval = (4 * 1000) * (1 + Math.random())
-
+function theGrandLoop(req, res, interval, ...unicorns) {
   setTimeout((req, res) => {
     unicorns.forEach((el) => {
       el(req, res)
@@ -46,8 +42,8 @@ function theGrandLoop(req, res, ...unicorns) {
 
     console.log('A scrape completed.')
 
-    interval = (4 * 1000) * (1 + Math.random())
-    theGrandLoop(req, res, ...unicorns)
+    interval = (30 * 1000) * (1 + Math.random())
+    theGrandLoop(req, res, interval, ...unicorns)
   }, interval)
 }
 
@@ -56,13 +52,14 @@ app.get('/', (req, res) => {
   theGrandLoop(
     req,
     res,
+    1000,
     twitter
     // google
   )
 })
 
-app.get('/twitter', (req, res) => theGrandLoop(req, res, twitter))
-app.get('/google', (req, res) => theGrandLoop(req, res, google))
+app.get('/twitter', (req, res) => theGrandLoop(req, res, 1000, twitter))
+app.get('/google', (req, res) => theGrandLoop(req, res, 1000, google))
 
 // Big boys.
 function twitter(req, res) {
