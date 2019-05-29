@@ -42,7 +42,7 @@ function theGrandLoop(req, res, interval, ...unicorns) {
 
     console.log('A scrape completed.')
 
-    interval = (30 * 1000) * (1 + Math.random())
+    interval = (60 * 1000) * (1 + Math.random())
     theGrandLoop(req, res, interval, ...unicorns)
   }, interval)
 }
@@ -140,22 +140,24 @@ function twitter(req, res) {
 
         // if there is a difference, alert user of that difference,
         // preferably via email. 
-        let titleString = '<h3>' + result.msg + '</h3>'
-        let bodyString = ''
-        result.jobs.forEach((el) => {
-          bodyString += '<h4>' + el.title + '</h4>'
-          bodyString += '<p>' + el.desc + '</p>'
-        })
-        mailOpts.subject = titleString
-        mailOpts.html = titleString + bodyString
+        if (result.code == 2) {
+          let titleString = '<h3>' + result.msg + '</h3>'
+          let bodyString = ''
+          result.jobs.forEach((el) => {
+            bodyString += '<h4>' + el.title + '</h4>'
+            bodyString += '<p>' + el.desc + '</p>'
+          })
+          mailOpts.subject = result.msg
+          mailOpts.html = titleString + bodyString
 
-        transporter.sendMail(mailOpts, (err, info) => {
-          if (err) {
-            console.log(err)
-          } else {
-            console.log(info)
-          }
-        })
+          transporter.sendMail(mailOpts, (err, info) => {
+            if (err) {
+              console.log(err)
+            } else {
+              console.log(info)
+            }
+          })
+        }
       })
     })
   })
