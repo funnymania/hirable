@@ -8,6 +8,36 @@ const nodemailer = require('nodemailer')
 const app = express()
 
 const jsonDiff = require('./diff_plugin/json-diff')
+const mapMaker = require('./mappings/map-maker')
+
+
+// Argument parsing for different locations
+const appArgs = process.argv.slice(2).slice(0);
+let location, jobTitle;
+
+if (appArgs.length == 1) {
+  location = appArgs.slice(0)
+} else if (appArgs.length == 2) {
+  location = appArgs.slice(0)
+  jobTitle = appArgs.slice(1)
+} else {
+  location = 'seattle'
+}
+
+const locMaps = mapMaker.mapMaker(location)
+
+// TODO: improve pattern matching
+const URLmatcher = {
+  // Twitter
+  twitter: [
+    'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team='
+    + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter + '-wa',
+    'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team='
+    + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter + '-wa&start=10'
+  ],
+  google: 'https://careers.google.com/jobs/results/?company=Google&company=Google%20Fiber&company=YouTube&employment_type=FULL_TIME&employment_type=PART_TIME&employment_type=TEMPORARY&hl=en_US&jlo=en_US&location='
+    + locMaps.google + '&q=engineer&sort_by=date',
+}
 
 let userEmail, userData;
 let transporter, mailOpts;
@@ -20,7 +50,7 @@ fs.readFile('userEmail.txt', 'utf8', (err, content) => {
     mailOpts = {
       from: userEmail,
       to: userEmail,
-      subject: 'Yayayaya', // TODO: dynamic generation on diffing
+      subject: 'Yayayaya',
       html: '<p>I amth the prawnsM</p>'
     }
 
@@ -34,6 +64,7 @@ fs.readFile('userEmail.txt', 'utf8', (err, content) => {
   })
 })
 
+// TODO: Group all reports into one email
 function theGrandLoop(req, res, interval, ...unicorns) {
   setTimeout((req, res) => {
     unicorns.forEach((el) => {
@@ -53,8 +84,8 @@ app.get('/', (req, res) => {
     req,
     res,
     1000,
-    twitter
-    // google
+    twitter,
+    // google,
   )
 })
 
@@ -62,8 +93,9 @@ app.get('/twitter', (req, res) => theGrandLoop(req, res, 1000, twitter))
 app.get('/google', (req, res) => theGrandLoop(req, res, 1000, google))
 
 // Big boys.
+// TODO: Separate each listing into its own separate file. 
 function twitter(req, res) {
-  let url = 'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team=&location=careers-twitter%3Alocation%2Fseattle-wa'
+  let url = URLmatcher.twitter[0]
   let jobRecording = []
 
   rp(url, (error, response, html) => {
@@ -89,7 +121,7 @@ function twitter(req, res) {
         })
     }
   }).then(() => {
-    url = 'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team=&location=careers-twitter%3Alocation%2Fseattle-wa&start=10'
+    url = URLmatcher.twitter[1]
     rp(url, (error, response, html) => {
       if (!error) {
         let $ = cheerio.load(html)
@@ -115,8 +147,10 @@ function twitter(req, res) {
 
       // TODO: Topple pyramid of doom into something else... 
       // Write 'jobsRipe' to 'jobsRotten'...
-      let twitterContent
       fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
+        if (err) {
+          fs.writeFile('./twitter/jobsRipe.json', '[]', (err) => { console.log('Jobs file created.') })
+        }
         fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
           if (!err) {
             // Overwrite new 'jobsRipe'
@@ -164,7 +198,7 @@ function twitter(req, res) {
 }
 
 function google(req, res) {
-  let url = 'https://careers.google.com/jobs/results/?company=Google&company=Google%20Fiber&company=YouTube&employment_type=FULL_TIME&employment_type=PART_TIME&employment_type=TEMPORARY&hl=en_US&jlo=en_US&location=Seattle,%20WA,%20USA&q=engineer&sort_by=date'
+  let url = URLmatcher.google
   let jobRecording = []
 
   rp(url, (error, response, html) => {
@@ -187,60 +221,55 @@ function google(req, res) {
           }
         })
     }
-  }).then(() => {
-    url = 'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team=&location=careers-twitter%3Alocation%2Fseattle-wa&start=10'
-    rp(url, (error, response, html) => {
-      if (!error) {
-        let $ = cheerio.load(html)
 
-        let jobList = $('.col.description')
-          .each((i, el) => {
-            let jobTitle = $(el).children('.job-search-title').text()
-
-            if (
-              jobTitle.includes('engineer')
-              || jobTitle.includes('Engineer')
-              || jobTitle.includes('developer')
-              || jobTitle.includes('Developer')
-            ) {
-              let jobDesc = $(el).children('.job-search-content').text().trim()
-              jobRecording.push({
-                title: jobTitle,
-                desc: jobDesc
-              })
-            }
-          })
+    // TODO: Topple pyramid of doom into something else... 
+    // Write 'jobsRipe' to 'jobsRotten'...
+    fs.readFile('./google/jobsRipe.json', 'utf8', (err, content) => {
+      if (err) {
+        fs.writeFile('./google/jobsRipe.json', '[]', (err) => { console.log('file created') })
       }
-
-      // TODO: Topple pyramid of doom into something else... 
-      // Write 'jobsRipe' to 'jobsRotten'...
-      let twitterContent
-      fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
-        fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
-          if (!err) {
-            // Overwrite new 'jobsRipe'
-            fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-              console.log('Jobs secured. Please pass \'Go.\'')
-            })
-          }
-        })
+      fs.writeFile('./google/jobsRotten.json', content, (err) => {
+        if (!err) {
+          // Overwrite new 'jobsRipe'
+          fs.writeFile('google/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs secured. Please pass \'Go.\'')
+          })
+        }
       })
     })
   }).then(() => {
     // Pass file contents as js objects
-    let ripe, rotten;
-    fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
+    let ripe, rotten, result;
+    fs.readFile('./google/jobsRipe.json', 'utf8', (err, content) => {
       ripe = JSON.parse(content)
-      fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content) => {
+      fs.readFile('./google/jobsRotten.json', 'utf8', (err, content) => {
         rotten = JSON.parse(content)
-        jsonDiff.jsonDiff(ripe, rotten)
+        result = jsonDiff.jsonDiff(ripe, rotten)
+
+        console.log('Google updated!')
+
+        // if there is a difference, alert user of that difference,
+        // preferably via email. 
+        if (result.code == 2 || result.code == 1) {
+          let titleString = '<h3>' + result.msg + '</h3>'
+          let bodyString = ''
+          result.jobs.forEach((el) => {
+            bodyString += '<h4>' + el.title + '</h4>'
+            bodyString += '<p>' + el.desc + '</p>'
+          })
+          mailOpts.subject = result.msg
+          mailOpts.html = titleString + bodyString
+
+          transporter.sendMail(mailOpts, (err, info) => {
+            if (err) {
+              console.log(err)
+            } else {
+              console.log(info)
+            }
+          })
+        }
       })
     })
-
-    // TODO: if there is a difference, alert user of that difference,
-    //    preferably via email. 
-
-    console.log('Twitter updated!')
 
   })
 }

@@ -16,17 +16,17 @@ pops up? :)
 Just thought I would put this out there since it is functioning, 
 but not very robust because:
 
-1. Only working on Twitter currently, and only using Seattle as a location
-2. Emailing functionality specifically for Gmail, and requiring user to turn on access to 'less secure apps'
+1. Only working on Twitter currently, currently using Seattle as a location, working on expanding this
+2. Emailing functionality specifically for Gmail, and requiring user to turn on access to 'less secure apps' for their Google account
 3. Not tested extensively for bugs
 
 # Instructions
 ```
 npm i
-node app.js
+node app.js seattle
 ```
 
-Every 30-60 seconds, the site(s) are scraped, and you are alerted
+Every 120-180 seconds, the site(s) are scraped, and you are alerted
 that your time has come! 
 
 You can find the results in relevant subFolders for each company's 
