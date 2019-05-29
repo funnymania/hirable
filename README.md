@@ -9,7 +9,7 @@ job posting that has been re-posted to linkedin / whereever?
 Want to actually be alerted when an actual new job from Twitter
 pops up? :)
 
-Now that's what I call Hirable!
+*NOW that's what I call* **Hirable**!
 
 # Current Progress
 
@@ -21,9 +21,10 @@ but not very robust because:
 3. Not tested extensively for bugs
 
 # Instructions
-
-`npm i`
-`node app.js`
+```
+npm i
+node app.js
+```
 
 Every 30-60 seconds, the site(s) are scraped, and you are alerted
 that your time has come! 
@@ -36,9 +37,9 @@ via email, too.
 
 Amuse your friends with your new, shiny offer! 
 
-NO MONEY BACK GUARANTEE
-EXTEND AT YOUR OWN RISK
-AND MAYBE SUBMIT A PR
+NO MONEY BACK GUARANTEE  
+EXTEND AT YOUR OWN RISK  
+AND MAYBE SUBMIT A PR  
 
 # Also
 
