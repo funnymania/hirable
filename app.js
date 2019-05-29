@@ -42,7 +42,7 @@ function theGrandLoop(req, res, interval, ...unicorns) {
 
     console.log('A scrape completed.')
 
-    interval = (60 * 1000) * (1 + Math.random())
+    interval = (120 * 1000) * (1 + Math.random())
     theGrandLoop(req, res, interval, ...unicorns)
   }, interval)
 }
@@ -140,7 +140,7 @@ function twitter(req, res) {
 
         // if there is a difference, alert user of that difference,
         // preferably via email. 
-        if (result.code == 2) {
+        if (result.code == 2 || result.code == 1) {
           let titleString = '<h3>' + result.msg + '</h3>'
           let bodyString = ''
           result.jobs.forEach((el) => {
