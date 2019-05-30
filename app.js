@@ -10,7 +10,6 @@ const app = express()
 const jsonDiff = require('./diff_plugin/json-diff')
 const mapMaker = require('./mappings/map-maker')
 
-
 // Argument parsing for different locations
 const appArgs = process.argv.slice(2).slice(0);
 let location, jobTitle;
@@ -171,6 +170,10 @@ function twitter(req, res) {
         result = jsonDiff.jsonDiff(ripe, rotten)
 
         console.log('Twitter updated!')
+
+        console.log(result.msg)
+        if (result.code == 2)
+          console.log(result.jobs[0])
 
         // if there is a difference, alert user of that difference,
         // preferably via email. 

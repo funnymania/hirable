@@ -16,15 +16,17 @@ pops up? :)
 Just thought I would put this out there since it is functioning, 
 but not very robust because:
 
-1. Only working on Twitter currently, currently using Seattle as a location, working on expanding this
+1. Only working on Twitter currently, currently using Seattle as a location, working on expanding this to other companies and locations
 2. Emailing functionality specifically for Gmail, and requiring user to turn on access to 'less secure apps' for their Google account
-3. Not tested extensively for bugs
+
 
 # Instructions
 ```
 npm i
 node app.js seattle
 ```
+
+Run localhost:4444 in a browser. 
 
 Every 120-180 seconds, the site(s) are scraped, and you are alerted
 that your time has come! 

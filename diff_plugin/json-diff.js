@@ -13,13 +13,12 @@ function jsonDiff(one, two) {
       }
     }
     if (!el1Present) {
-      newList.push(el1Present)
+      newList.push(el1)
     } else {
       el1Present = true
     }
   })
 
-  // TODO: Report newList.
   if (!newList.length == 0) {
     return {
       code: 2,
