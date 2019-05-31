@@ -91,7 +91,7 @@ app.get('/', (req, res) => {
     res,
     1000,
     twitter,
-    // google,
+    google,
   )
 })
 
@@ -200,38 +200,36 @@ function google(req, res) {
     if (!error) {
       let $ = cheerio.load(html)
 
-      let jobList = $('.gc-card__title.gc-heading.gc-heading--beta')
-        .each((i, el) => {
-          let jobTitle = $(el).text()
+      $('.gc-card__title.gc-heading.gc-heading--beta').each((i, el) => {
+        let jobTitle = $(el).text()
 
-          if (
-            jobTitle.includes('engineer')
-            || jobTitle.includes('Engineer')
-            || jobTitle.includes('developer')
-            || jobTitle.includes('Developer')
-          ) {
-            jobRecording.push({
-              title: jobTitle
-            })
-          }
-        })
-    }
-
-    // TODO: Topple pyramid of doom into something else... 
-    // Write 'jobsRipe' to 'jobsRotten'...
-    fs.readFile('./google/jobsRipe.json', 'utf8', (err, content) => {
-      if (err) {
-        fs.writeFile('./google/jobsRipe.json', '[]', (err) => { console.log('file created') })
-      }
-      fs.writeFile('./google/jobsRotten.json', content, (err) => {
-        if (!err) {
-          // Overwrite new 'jobsRipe'
-          fs.writeFile('google/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-            console.log('Jobs secured. Please pass \'Go.\'')
+        if (
+          jobTitle.includes('engineer')
+          || jobTitle.includes('Engineer')
+          || jobTitle.includes('developer')
+          || jobTitle.includes('Developer')
+        ) {
+          jobRecording.push({
+            title: jobTitle
           })
         }
       })
-    })
+
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./google/jobsRipe.json', 'utf8', (err, content) => {
+        if (err) {
+          fs.writeFile('./google/jobsRipe.json', '[]', (err) => { console.log('file created') })
+        }
+        fs.writeFile('./google/jobsRotten.json', content, (err) => {
+          if (!err) {
+            // Overwrite new 'jobsRipe'
+            fs.writeFile('google/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+              console.log('Jobs secured. Please pass \'Go.\'')
+            })
+          }
+        })
+      })
+    }
   }).then(() => {
     // Pass file contents as js objects
     let ripe, rotten, result;
@@ -243,29 +241,19 @@ function google(req, res) {
 
         console.log('Google updated!')
 
-        // if there is a difference, alert user of that difference,
-        // preferably via email. 
-        if (result.code == 2 || result.code == 1) {
-          let titleString = '<h3>' + result.msg + '</h3>'
-          let bodyString = ''
-          result.jobs.forEach((el) => {
-            bodyString += '<h4>' + el.title + '</h4>'
-            bodyString += '<p>' + el.desc + '</p>'
-          })
-          mailOpts.subject = result.msg
-          mailOpts.html = titleString + bodyString
+        if (result.code == 2)
+          console.log(result.jobs[0])
 
-          transporter.sendMail(mailOpts, (err, info) => {
-            if (err) {
-              console.log(err)
-            } else {
-              console.log(info)
-            }
-          })
+        let listingData = {
+          org: 'Twitter',
+          orgResults: result,
         }
+
+        scrapeGoat.push(listingData)
       })
     })
-
+  }).catch((err) => {
+    console.log(err)
   })
 }
 
