@@ -41,16 +41,14 @@ function matchingState(city) {
 
 function matchingStateAcronym(city) {
   switch (city) {
-    case 'seattle':
+    case "seattle":
     case 'kirkland':
-    case 'redmond': {
-      return 'wa'
-    }
+    case 'redmond':
+      return 'wa';
     case 'newyork':
     case 'ny':
-    case 'nyc': {
-      return 'ny'
-    }
+    case 'nyc':
+      return 'ny';
     case 'sanfrancisco':
     case 'sanjose':
     case 'sunnyvale':
@@ -60,9 +58,10 @@ function matchingStateAcronym(city) {
     case 'berkeley':
     case 'la':
     case 'losangelos':
-    case 'sacramento': {
-      return 'ca'
-    }
+    case 'sacramento':
+      return 'ca';
+    default:
+      return 'wa';
   }
 }
 

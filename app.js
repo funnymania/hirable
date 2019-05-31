@@ -12,13 +12,13 @@ const mapMaker = require('./mappings/map-maker')
 
 // Argument parsing for different locations
 const appArgs = process.argv.slice(2).slice(0);
-let location, jobTitle;
+let location
 
 if (appArgs.length == 1) {
-  location = appArgs.slice(0)
+  location = appArgs[0]
 } else if (appArgs.length == 2) {
-  location = appArgs.slice(0)
-  jobTitle = appArgs.slice(1)
+  location = appArgs[0]
+  // jobTitle = appArgs[1]
 } else {
   location = 'seattle'
 }
@@ -30,9 +30,11 @@ const URLmatcher = {
   // Twitter
   twitter: [
     'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team='
-    + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter + '-wa',
+    + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter,
     'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team='
-    + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter + '-wa&start=10'
+    + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter + '&start=10',
+    'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team='
+    + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter + '&start=20'
   ],
   google: 'https://careers.google.com/jobs/results/?company=Google&company=Google%20Fiber&company=YouTube&employment_type=FULL_TIME&employment_type=PART_TIME&employment_type=TEMPORARY&hl=en_US&jlo=en_US&location='
     + locMaps.google + '&q=engineer&sort_by=date',
@@ -79,6 +81,7 @@ function theGrandLoop(req, res, interval, ...unicorns) {
 
 // Gimme everything.
 app.get('/', (req, res) => {
+  console.log(locMaps.twitter)
   theGrandLoop(
     req,
     res,
@@ -97,27 +100,37 @@ function twitter(req, res) {
   let url = URLmatcher.twitter[0]
   let jobRecording = []
 
+  // let reqOpts = {
+  //   url: URLmatcher.twitter[0],
+  //   headers: {
+  //     'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+  //     'pragma': 'no-cache',
+  //     'upgrade-insecure-requests': '1',
+  //     'dnt': '1',
+  //     'path': '/content/careers-twitter/en/jobs-search.html?q=&location=careers-twitter%3Alocation%2Fseattle-wa',
+  //     'accept-language': 'en-US,en;q=0.9'
+  //   }
+  // }
+
   rp(url, (error, response, html) => {
     if (!error) {
       let $ = cheerio.load(html)
+      $('.col.description').each((i, el) => {
+        let jobTitle = $(el).children('.job-search-title').text()
 
-      let jobList = $('.col.description')
-        .each((i, el) => {
-          let jobTitle = $(el).children('.job-search-title').text()
-
-          if (
-            jobTitle.includes('engineer')
-            || jobTitle.includes('Engineer')
-            || jobTitle.includes('developer')
-            || jobTitle.includes('Developer')
-          ) {
-            let jobDesc = $(el).children('.job-search-content').text().trim()
-            jobRecording.push({
-              title: jobTitle,
-              desc: jobDesc
-            })
-          }
-        })
+        if (
+          jobTitle.includes('engineer')
+          || jobTitle.includes('Engineer')
+          || jobTitle.includes('developer')
+          || jobTitle.includes('Developer')
+        ) {
+          let jobDesc = $(el).children('.job-search-content').text().trim()
+          jobRecording.push({
+            title: jobTitle,
+            desc: jobDesc
+          })
+        }
+      })
     }
   }).then(() => {
     url = URLmatcher.twitter[1]
@@ -142,61 +155,61 @@ function twitter(req, res) {
               })
             }
           })
+        // TODO: Topple pyramid of doom into something else... 
+        // Write 'jobsRipe' to 'jobsRotten'...
+        fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
+          if (err) {
+            fs.writeFile('./twitter/jobsRipe.json', '[]', (err) => { console.log('Jobs file created.') })
+          }
+          fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                console.log('Jobs secured. Please pass \'Go.\'')
+              })
+            }
+          })
+        })
       }
-
-      // TODO: Topple pyramid of doom into something else... 
-      // Write 'jobsRipe' to 'jobsRotten'...
+    }).then(() => {
+      // Pass file contents as js objects
+      let ripe, rotten, result;
       fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
-        if (err) {
-          fs.writeFile('./twitter/jobsRipe.json', '[]', (err) => { console.log('Jobs file created.') })
-        }
-        fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
-          if (!err) {
-            // Overwrite new 'jobsRipe'
-            fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-              console.log('Jobs secured. Please pass \'Go.\'')
+        ripe = JSON.parse(content)
+        fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content) => {
+          rotten = JSON.parse(content)
+          result = jsonDiff.jsonDiff(ripe, rotten)
+
+          console.log('Twitter updated!')
+
+          if (result.code == 2)
+            console.log(result.jobs[0])
+
+          // if there is a difference, alert user of that difference,
+          // preferably via email. 
+          if (result.code == 2 || result.code == 1) {
+            let titleString = '<h3>' + result.msg + '</h3>'
+            let bodyString = ''
+            result.jobs.forEach((el) => {
+              bodyString += '<h4>' + el.title + '</h4>'
+              bodyString += '<p>' + el.desc + '</p>'
+            })
+            mailOpts.subject = result.msg
+            mailOpts.html = titleString + bodyString
+
+            transporter.sendMail(mailOpts, (err, info) => {
+              if (err) {
+                console.log(err)
+              } else {
+                console.log(info)
+              }
             })
           }
         })
       })
     })
-  }).then(() => {
-    // Pass file contents as js objects
-    let ripe, rotten, result;
-    fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
-      ripe = JSON.parse(content)
-      fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content) => {
-        rotten = JSON.parse(content)
-        result = jsonDiff.jsonDiff(ripe, rotten)
-
-        console.log('Twitter updated!')
-
-        console.log(result.msg)
-        if (result.code == 2)
-          console.log(result.jobs[0])
-
-        // if there is a difference, alert user of that difference,
-        // preferably via email. 
-        if (result.code == 2 || result.code == 1) {
-          let titleString = '<h3>' + result.msg + '</h3>'
-          let bodyString = ''
-          result.jobs.forEach((el) => {
-            bodyString += '<h4>' + el.title + '</h4>'
-            bodyString += '<p>' + el.desc + '</p>'
-          })
-          mailOpts.subject = result.msg
-          mailOpts.html = titleString + bodyString
-
-          transporter.sendMail(mailOpts, (err, info) => {
-            if (err) {
-              console.log(err)
-            } else {
-              console.log(info)
-            }
-          })
-        }
-      })
-    })
+  }).catch((err) => {
+    console.log(err)
   })
 }
 
