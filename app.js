@@ -202,6 +202,7 @@ function google(req, res) {
       jsonData.jobs.forEach((el) => {
         jobRecording.push({
           title: el.job_title,
+          desc: el.summary,
         })
       })
 
