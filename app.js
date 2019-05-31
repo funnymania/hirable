@@ -10,22 +10,24 @@ const app = express()
 const jsonDiff = require('./diff_plugin/json-diff')
 const mapMaker = require('./mappings/map-maker')
 
+// For emails.
+let scrapeGoat = []
+
 // Argument parsing for different locations
 const appArgs = process.argv.slice(2).slice(0);
-let location
+let location, role
 
 if (appArgs.length == 1) {
   location = appArgs[0]
 } else if (appArgs.length == 2) {
   location = appArgs[0]
-  // jobTitle = appArgs[1]
+  role = appArgs[1]
 } else {
   location = 'seattle'
 }
 
 const locMaps = mapMaker.mapMaker(location)
 
-// TODO: improve pattern matching
 const URLmatcher = {
   // Twitter
   twitter: [
@@ -65,23 +67,25 @@ fs.readFile('userEmail.txt', 'utf8', (err, content) => {
   })
 })
 
-// TODO: Group all reports into one email
 function theGrandLoop(req, res, interval, ...unicorns) {
   setTimeout((req, res) => {
+    // Group all reports into one email
+    if (scrapeGoat.length != 0) {
+      groupToMail(scrapeGoat)
+    }
+
     unicorns.forEach((el) => {
       el(req, res)
     })
-
     console.log('A scrape completed.')
 
-    interval = (120 * 1000) * (1 + Math.random())
+    interval = (10 * 1000) * (1 + Math.random())
     theGrandLoop(req, res, interval, ...unicorns)
   }, interval)
 }
 
 // Gimme everything.
 app.get('/', (req, res) => {
-  console.log(locMaps.twitter)
   theGrandLoop(
     req,
     res,
@@ -99,18 +103,6 @@ app.get('/google', (req, res) => theGrandLoop(req, res, 1000, google))
 function twitter(req, res) {
   let url = URLmatcher.twitter[0]
   let jobRecording = []
-
-  // let reqOpts = {
-  //   url: URLmatcher.twitter[0],
-  //   headers: {
-  //     'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
-  //     'pragma': 'no-cache',
-  //     'upgrade-insecure-requests': '1',
-  //     'dnt': '1',
-  //     'path': '/content/careers-twitter/en/jobs-search.html?q=&location=careers-twitter%3Alocation%2Fseattle-wa',
-  //     'accept-language': 'en-US,en;q=0.9'
-  //   }
-  // }
 
   rp(url, (error, response, html) => {
     if (!error) {
@@ -138,23 +130,22 @@ function twitter(req, res) {
       if (!error) {
         let $ = cheerio.load(html)
 
-        let jobList = $('.col.description')
-          .each((i, el) => {
-            let jobTitle = $(el).children('.job-search-title').text()
+        $('.col.description').each((i, el) => {
+          let jobTitle = $(el).children('.job-search-title').text()
 
-            if (
-              jobTitle.includes('engineer')
-              || jobTitle.includes('Engineer')
-              || jobTitle.includes('developer')
-              || jobTitle.includes('Developer')
-            ) {
-              let jobDesc = $(el).children('.job-search-content').text().trim()
-              jobRecording.push({
-                title: jobTitle,
-                desc: jobDesc
-              })
-            }
-          })
+          if (
+            jobTitle.includes('engineer')
+            || jobTitle.includes('Engineer')
+            || jobTitle.includes('developer')
+            || jobTitle.includes('Developer')
+          ) {
+            let jobDesc = $(el).children('.job-search-content').text().trim()
+            jobRecording.push({
+              title: jobTitle,
+              desc: jobDesc
+            })
+          }
+        })
         // TODO: Topple pyramid of doom into something else... 
         // Write 'jobsRipe' to 'jobsRotten'...
         fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
@@ -174,6 +165,8 @@ function twitter(req, res) {
     }).then(() => {
       // Pass file contents as js objects
       let ripe, rotten, result;
+      // BUG: fileReads above are async so we need to put these reads in the callbacks
+      //    of those reads above.
       fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
         ripe = JSON.parse(content)
         fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content) => {
@@ -185,26 +178,12 @@ function twitter(req, res) {
           if (result.code == 2)
             console.log(result.jobs[0])
 
-          // if there is a difference, alert user of that difference,
-          // preferably via email. 
-          if (result.code == 2 || result.code == 1) {
-            let titleString = '<h3>' + result.msg + '</h3>'
-            let bodyString = ''
-            result.jobs.forEach((el) => {
-              bodyString += '<h4>' + el.title + '</h4>'
-              bodyString += '<p>' + el.desc + '</p>'
-            })
-            mailOpts.subject = result.msg
-            mailOpts.html = titleString + bodyString
-
-            transporter.sendMail(mailOpts, (err, info) => {
-              if (err) {
-                console.log(err)
-              } else {
-                console.log(info)
-              }
-            })
+          let listingData = {
+            org: 'Twitter',
+            orgResults: result,
           }
+
+          scrapeGoat.push(listingData)
         })
       })
     })
@@ -374,6 +353,36 @@ function doordash(req, res) {
 function unity(req, res) {
 
 }
+
+// listingResults: org and orgResults
+// If there is a meaningful result, add to email
+function groupToMail(listingResults) {
+  let emailBody = ''
+  listingResults.forEach((result) => {
+    if (result.orgResults.code == 2 || result.orgResults.code == 1) {
+      let titleString = '<h3>' + result.org + '</h3>'
+      let bodyString = ''
+      result.orgResults.jobs.forEach((el) => {
+        bodyString += '<h4>' + el.title + '</h4>'
+        bodyString += '<p>' + el.desc + '</p>'
+      })
+      emailBody += titleString + bodyString
+    }
+  })
+  if (emailBody != '') {
+    mailOpts.subject = 'New openings @ someplace!'
+    mailOpts.html = emailBody
+
+    transporter.sendMail(mailOpts, (err, info) => {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log(info)
+      }
+    })
+  }
+}
+
 
 // 4444 -> $$$$
 app.listen(4444)
