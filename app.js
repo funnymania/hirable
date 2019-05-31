@@ -38,7 +38,7 @@ const URLmatcher = {
     'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team='
     + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter + '&start=20'
   ],
-  google: 'https://careers.google.com/jobs/results/?company=Google&company=Google%20Fiber&company=YouTube&employment_type=FULL_TIME&employment_type=PART_TIME&employment_type=TEMPORARY&hl=en_US&jlo=en_US&location='
+  google: 'https://careers.google.com/api/jobs/jobs-v1/search/?company=Google&company=Google%20Fiber&company=YouTube&employment_type=FULL_TIME&employment_type=PART_TIME&employment_type=TEMPORARY&hl=en_US&jlo=en_US&location='
     + locMaps.google + '&q=engineer&sort_by=date',
 }
 
@@ -198,26 +198,16 @@ function google(req, res) {
 
   rp(url, (error, response, html) => {
     if (!error) {
-      let $ = cheerio.load(html)
-
-      $('.gc-card__title.gc-heading.gc-heading--beta').each((i, el) => {
-        let jobTitle = $(el).text()
-
-        if (
-          jobTitle.includes('engineer')
-          || jobTitle.includes('Engineer')
-          || jobTitle.includes('developer')
-          || jobTitle.includes('Developer')
-        ) {
-          jobRecording.push({
-            title: jobTitle
-          })
-        }
+      jsonData = JSON.parse(html)
+      jsonData.jobs.forEach((el) => {
+        jobRecording.push({
+          title: el.job_title,
+        })
       })
 
       // Write 'jobsRipe' to 'jobsRotten'...
       fs.readFile('./google/jobsRipe.json', 'utf8', (err, content) => {
-        if (err) {
+        if (content == '') {
           fs.writeFile('./google/jobsRipe.json', '[]', (err) => { console.log('file created') })
         }
         fs.writeFile('./google/jobsRotten.json', content, (err) => {
