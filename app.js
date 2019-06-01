@@ -108,7 +108,6 @@ function twitter(req, res, resolve) {
   let url = URLmatcher.twitter[0]
   let jobRecording = []
 
-  // TODO: twitter is throwing duplicates into scrapeGoat
   rp(url, (error, response, html) => {
     if (!error) {
       let $ = cheerio.load(html)
@@ -229,7 +228,7 @@ function google(req, res, resolve) {
                     console.log(result.jobs[0])
 
                   let listingData = {
-                    org: 'Twitter',
+                    org: 'Google',
                     orgResults: result,
                   }
 
