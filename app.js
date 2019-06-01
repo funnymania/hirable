@@ -39,6 +39,8 @@ const URLmatcher = {
   ],
   google: 'https://careers.google.com/api/jobs/jobs-v1/search/?company=Google&company=Google%20Fiber&company=YouTube&employment_type=FULL_TIME&employment_type=PART_TIME&employment_type=TEMPORARY&hl=en_US&jlo=en_US&location='
     + locMaps.google + '&q=engineer&sort_by=date',
+  amazon: 'https://www.amazon.jobs/en/search.json?base_query=&category[]=software-development&city=&country=&county=&facets[]=location&facets[]=business_category&facets[]=category&facets[]=schedule_type_id&facets[]=employee_class&facets[]=normalized_location&facets[]=job_function_id&latitude=&loc_group_id=&loc_query=&longitude=&offset=0&query_options=&radius=24km&region=&result_limit=20&sort=recent',
+  apple: 'https://jobs.apple.com/en-us/search?sort=newest&location=seattle-SEA',
 }
 
 let userEmail, userData;
@@ -96,11 +98,16 @@ app.get('/', (req, res) => {
     1000,
     twitter,
     google,
+    amazon,
+    apple,
   )
 })
 
 app.get('/twitter', (req, res) => theGrandLoop(req, res, 1000, twitter))
 app.get('/google', (req, res) => theGrandLoop(req, res, 1000, google))
+app.get('/amazon', (req, res) => theGrandLoop(req, res, 1000, amazon))
+app.get('/apple', (req, res) => theGrandLoop(req, res, 1000, apple))
+
 
 // Big boys.
 // TODO: Separate each listing into its own separate file. 
@@ -295,8 +302,76 @@ function microsoft(req, res) {
 
 }
 
-function apple(req, res) {
+function apple(req, res, resolve) {
+  let url = URLmatcher.apple
+  let jobRecording = []
 
+  rp(url, (error, response, html) => {
+    if (!error) {
+      let $ = cheerio.load(html)
+      $('.table-col-1').each((i, el) => {
+        let jobTitle = $(el).children('.table--advanced-search__title').text()
+
+        if (
+          jobTitle.includes('engineer')
+          || jobTitle.includes('Engineer')
+          || jobTitle.includes('developer')
+          || jobTitle.includes('Developer')
+        ) {
+          let jobDesc = $(el).children('.table--advanced-search__role').text().trim()
+          jobRecording.push({
+            title: jobTitle,
+            desc: jobDesc
+          })
+        }
+      })
+      // TODO: Topple pyramid of doom into something else... 
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./apple/jobsRipe.json', 'utf8', (err, content) => {
+        if (content == '') {
+          fs.writeFile('./apple/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs file created.')
+          })
+        } else {
+          fs.writeFile('./apple/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('apple/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./apple/jobsRipe.json', 'utf8', (err, content2) => {
+                  const ripe = JSON.parse(content2)
+                  fs.readFile('./apple/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, false)
+
+                      console.log('Apple updated!')
+
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
+
+                      let listingData = {
+                        org: 'Apple',
+                        orgResults: result,
+                      }
+
+                      scrapeGoat.push(listingData)
+                      resolve()
+                    } catch {
+                      console.log(err)
+                      fs.writeFile('./apple/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
+                      })
+                    }
+                  })
+                })
+              })
+            }
+          })
+        }
+      })
+    }
+  })
 }
 
 function uber(req, res) {
@@ -310,9 +385,69 @@ function snapchat(req, res) {
 function splunk(req, res) {
 
 }
+// res.jobs.title & res.jobs.description_short
+function amazon(req, res, resolve) {
+  let url = URLmatcher.amazon
+  let jobRecording = []
 
-function amazon(req, res) {
+  rp(url, (error, response, html) => {
+    if (!error) {
+      jsonData = JSON.parse(html)
+      jsonData.jobs.forEach((el) => {
+        jobRecording.push({
+          title: el.title,
+          desc: el.description_short,
+        })
+      })
 
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./amazon/jobsRipe.json', 'utf8', (err, content) => {
+        if (content == '') {
+          fs.writeFile('./amazon/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs file created')
+          })
+        } else {
+          fs.writeFile('./amazon/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('./amazon/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./amazon/jobsRipe.json', 'utf8', (err, content2) => {
+                  const ripe = JSON.parse(content2)
+                  fs.readFile('./amazon/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, true)
+
+                      console.log('amazon updated!')
+
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
+
+                      let listingData = {
+                        org: 'Amazon',
+                        orgResults: result,
+                      }
+
+                      scrapeGoat.push(listingData)
+                    } catch (err) {
+                      console.log(err)
+                      fs.writeFile('./amazon/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                      })
+                    }
+
+                    resolve()
+                  })
+                })
+              })
+            }
+          })
+        }
+      })
+    }
+  }).catch((err) => {
+    console.log(err)
+  })
 }
 
 function facebook(req, res) {
