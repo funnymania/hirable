@@ -1,6 +1,10 @@
-function jsonDiff(one, two) {
+function jsonDiff(first, two, allowDupes) {
   let el1Present = false
   let newList = []
+  let one
+  if (!allowDupes) {
+    one = [...new Set(first)]
+  }
 
   one.forEach((el1) => {
     for (let i = two.length - 1; i > -1; i--) {
@@ -9,7 +13,9 @@ function jsonDiff(one, two) {
       ) {
         el1Present = true
         two.splice(i, 1)
-        break
+        if (allowDupes) {
+          break
+        }
       }
     }
     if (!el1Present) {

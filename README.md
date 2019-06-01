@@ -16,9 +16,10 @@ pops up? :)
 Just thought I would put this out there since it is functioning, 
 but not very robust because:
 
-1. Only working on Twitter currently, currently using Seattle as a location, working on expanding this to other companies and locations
+1. Currently using Seattle as a location, working on expanding this to other locations
 2. Emailing functionality specifically for Gmail, and requiring user to turn on access to 'less secure apps' for their Google account
-
+3. Twitter's listings, more often than not, are not consistent, including openings which overwrite other openings, duplicates, and therefore generate
+unnecessary and non-relevant emails. Currently Twitter is unsupported.
 
 # Instructions
 ```

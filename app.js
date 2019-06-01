@@ -150,54 +150,76 @@ function twitter(req, res, resolve) {
             })
           }
         })
-        // TODO: Topple pyramid of doom into something else... 
-        // Write 'jobsRipe' to 'jobsRotten'...
-        // BUG: I believe something here is responsible for the emails in which
-        //    the same 2 jobs are being reported as new in a neverending cycle
-        fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
-          if (content == '') {
-            content = '[]'
-            fs.writeFile('./twitter/jobsRipe.json', content, (err) => {
-              console.log('Jobs file created.')
-            })
-          } else {
-            fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
-              if (!err) {
-                // Overwrite new 'jobsRipe'
-                fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-                  fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content2) => {
-                    const ripe = JSON.parse(content2)
-                    fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content3) => {
-                      try {
-                        const rotten = JSON.parse(content3)
-                        const result = jsonDiff.jsonDiff(ripe, rotten)
+      }
+    }).then(() => {
+      url = URLmatcher.twitter[2]
+      rp(url, (error, response, html) => {
+        if (!error) {
+          let $ = cheerio.load(html)
 
-                        console.log('Twitter updated!')
+          $('.col.description').each((i, el) => {
+            let jobTitle = $(el).children('.job-search-title').text()
 
-                        if (result.code == 2)
-                          console.log(result.jobs[0])
+            if (
+              jobTitle.includes('engineer')
+              || jobTitle.includes('Engineer')
+              || jobTitle.includes('developer')
+              || jobTitle.includes('Developer')
+            ) {
+              let jobDesc = $(el).children('.job-search-content').text().trim()
+              jobRecording.push({
+                title: jobTitle,
+                desc: jobDesc
+              })
+            }
+          })
+          // TODO: Topple pyramid of doom into something else... 
+          // Write 'jobsRipe' to 'jobsRotten'...
+          fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
+            if (content == '') {
+              content = '[]'
+              fs.writeFile('./twitter/jobsRipe.json', content, (err) => {
+                console.log('Jobs file created.')
+              })
+            } else {
+              fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
+                if (!err) {
+                  // Overwrite new 'jobsRipe'
+                  fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                    fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content2) => {
+                      const ripe = JSON.parse(content2)
+                      fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content3) => {
+                        try {
+                          const rotten = JSON.parse(content3)
+                          const result = jsonDiff.jsonDiff(ripe, rotten, false)
 
-                        let listingData = {
-                          org: 'Twitter',
-                          orgResults: result,
+                          console.log('Twitter updated!')
+
+                          if (result.code == 2)
+                            console.log(result.jobs[0])
+
+                          let listingData = {
+                            org: 'Twitter',
+                            orgResults: result,
+                          }
+
+                          scrapeGoat.push(listingData)
+                          resolve()
+                        } catch {
+                          console.log(err)
+                          fs.writeFile('./twitter/error-out.txt', content2, () => {
+                            console.log('Likely a JSON parse error, see error-out.txt')
+                          })
                         }
-
-                        scrapeGoat.push(listingData)
-                        resolve()
-                      } catch {
-                        console.log(err)
-                        fs.writeFile('./twitter/error-out.txt', content2, () => {
-                          console.log('Likely a JSON parse error, see error-out.txt')
-                        })
-                      }
+                      })
                     })
                   })
-                })
-              }
-            })
-          }
-        })
-      }
+                }
+              })
+            }
+          })
+        }
+      })
     })
   }).catch((err) => {
     console.log(err)
@@ -235,7 +257,7 @@ function google(req, res, resolve) {
                   fs.readFile('./google/jobsRotten.json', 'utf8', (err, content3) => {
                     try {
                       const rotten = JSON.parse(content3)
-                      const result = jsonDiff.jsonDiff(ripe, rotten)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, true)
 
                       console.log('Google updated!')
 
