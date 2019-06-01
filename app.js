@@ -68,9 +68,6 @@ fs.readFile('userEmail.txt', 'utf8', (err, content) => {
 
 function theGrandLoop(req, res, interval, ...unicorns) {
   setTimeout((req, res) => {
-    // [twitter,google,etc]
-    // aka... Promise.all(promise, promise, promise).then(email)
-
     let promisedCorns = unicorns.map((el) => {
       return new Promise((resolve, reject) => {
         el(req, res, resolve)
@@ -79,6 +76,7 @@ function theGrandLoop(req, res, interval, ...unicorns) {
 
     Promise.all(promisedCorns).then(() => {
       console.log('A scrape completed.')
+
       // Group all reports into one email
       if (scrapeGoat.length != 0) {
         groupToMail(scrapeGoat)
