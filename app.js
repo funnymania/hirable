@@ -29,7 +29,6 @@ if (appArgs.length == 1) {
 const locMaps = mapMaker.mapMaker(location)
 
 const URLmatcher = {
-  // Twitter
   twitter: [
     'https://careers.twitter.com/content/careers-twitter/en/jobs-search.html?q=&team='
     + '&location=careers-twitter%3Alocation%2F' + locMaps.twitter,
@@ -69,18 +68,25 @@ fs.readFile('userEmail.txt', 'utf8', (err, content) => {
 
 function theGrandLoop(req, res, interval, ...unicorns) {
   setTimeout((req, res) => {
-    // Group all reports into one email
-    if (scrapeGoat.length != 0) {
-      groupToMail(scrapeGoat)
-    }
+    // [twitter,google,etc]
+    // aka... Promise.all(promise, promise, promise).then(email)
 
-    unicorns.forEach((el) => {
-      el(req, res)
+    let promisedCorns = unicorns.map((el) => {
+      return new Promise((resolve, reject) => {
+        el(req, res, resolve)
+      })
     })
-    console.log('A scrape completed.')
 
-    interval = (10 * 1000) * (1 + Math.random())
-    theGrandLoop(req, res, interval, ...unicorns)
+    Promise.all(promisedCorns).then(() => {
+      console.log('A scrape completed.')
+      // Group all reports into one email
+      if (scrapeGoat.length != 0) {
+        groupToMail(scrapeGoat)
+        scrapeGoat = []
+      }
+      interval = (30 * 1000) * (1 + Math.random())
+      theGrandLoop(req, res, interval, ...unicorns)
+    })
   }, interval)
 }
 
@@ -100,7 +106,7 @@ app.get('/google', (req, res) => theGrandLoop(req, res, 1000, google))
 
 // Big boys.
 // TODO: Separate each listing into its own separate file. 
-function twitter(req, res) {
+function twitter(req, res, resolve) {
   let url = URLmatcher.twitter[0]
   let jobRecording = []
 
@@ -174,6 +180,7 @@ function twitter(req, res) {
                     }
 
                     scrapeGoat.push(listingData)
+                    resolve()
                   })
                 })
               })
@@ -181,15 +188,13 @@ function twitter(req, res) {
           })
         })
       }
-    }).then(() => {
-
     })
   }).catch((err) => {
     console.log(err)
   })
 }
 
-function google(req, res) {
+function google(req, res, resolve) {
   let url = URLmatcher.google
   let jobRecording = []
 
@@ -230,6 +235,7 @@ function google(req, res) {
                   }
 
                   scrapeGoat.push(listingData)
+                  resolve()
                 })
               })
             })
