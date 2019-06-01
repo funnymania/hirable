@@ -156,36 +156,33 @@ function twitter(req, res) {
             if (!err) {
               // Overwrite new 'jobsRipe'
               fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-                console.log('Jobs secured. Please pass \'Go.\'')
+                let ripe, rotten, result;
+                fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content2) => {
+                  ripe = JSON.parse(content2)
+                  fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content3) => {
+                    rotten = JSON.parse(content3)
+                    result = jsonDiff.jsonDiff(ripe, rotten)
+
+                    console.log('Twitter updated!')
+
+                    if (result.code == 2)
+                      console.log(result.jobs[0])
+
+                    let listingData = {
+                      org: 'Twitter',
+                      orgResults: result,
+                    }
+
+                    scrapeGoat.push(listingData)
+                  })
+                })
               })
             }
           })
         })
       }
     }).then(() => {
-      // Pass file contents as js objects
-      let ripe, rotten, result;
-      // BUG: fileReads above are async so we need to put these reads in the callbacks
-      //    of those reads above.
-      fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
-        ripe = JSON.parse(content)
-        fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content) => {
-          rotten = JSON.parse(content)
-          result = jsonDiff.jsonDiff(ripe, rotten)
 
-          console.log('Twitter updated!')
-
-          if (result.code == 2)
-            console.log(result.jobs[0])
-
-          let listingData = {
-            org: 'Twitter',
-            orgResults: result,
-          }
-
-          scrapeGoat.push(listingData)
-        })
-      })
     })
   }).catch((err) => {
     console.log(err)
@@ -215,34 +212,31 @@ function google(req, res) {
           if (!err) {
             // Overwrite new 'jobsRipe'
             fs.writeFile('google/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-              console.log('Jobs secured. Please pass \'Go.\'')
+              let ripe, rotten, result;
+              fs.readFile('./google/jobsRipe.json', 'utf8', (err, content2) => {
+                ripe = JSON.parse(content2)
+                fs.readFile('./google/jobsRotten.json', 'utf8', (err, content3) => {
+                  rotten = JSON.parse(content3)
+                  result = jsonDiff.jsonDiff(ripe, rotten)
+
+                  console.log('Google updated!')
+
+                  if (result.code == 2)
+                    console.log(result.jobs[0])
+
+                  let listingData = {
+                    org: 'Twitter',
+                    orgResults: result,
+                  }
+
+                  scrapeGoat.push(listingData)
+                })
+              })
             })
           }
         })
       })
     }
-  }).then(() => {
-    // Pass file contents as js objects
-    let ripe, rotten, result;
-    fs.readFile('./google/jobsRipe.json', 'utf8', (err, content) => {
-      ripe = JSON.parse(content)
-      fs.readFile('./google/jobsRotten.json', 'utf8', (err, content) => {
-        rotten = JSON.parse(content)
-        result = jsonDiff.jsonDiff(ripe, rotten)
-
-        console.log('Google updated!')
-
-        if (result.code == 2)
-          console.log(result.jobs[0])
-
-        let listingData = {
-          org: 'Twitter',
-          orgResults: result,
-        }
-
-        scrapeGoat.push(listingData)
-      })
-    })
   }).catch((err) => {
     console.log(err)
   })
