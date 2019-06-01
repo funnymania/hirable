@@ -418,7 +418,7 @@ function amazon(req, res, resolve) {
                       const rotten = JSON.parse(content3)
                       const result = jsonDiff.jsonDiff(ripe, rotten, true)
 
-                      console.log('amazon updated!')
+                      console.log('Amazon updated!')
 
                       if (result.code == 2)
                         console.log(result.jobs[0])
