@@ -155,37 +155,47 @@ function twitter(req, res, resolve) {
         // BUG: I believe something here is responsible for the emails in which
         //    the same 2 jobs are being reported as new in a neverending cycle
         fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
-          if (err) {
-            fs.writeFile('./twitter/jobsRipe.json', '[]', (err) => { console.log('Jobs file created.') })
-          }
-          fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
-            if (!err) {
-              // Overwrite new 'jobsRipe'
-              fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-                let ripe, rotten, result;
-                fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content2) => {
-                  ripe = JSON.parse(content2)
-                  fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content3) => {
-                    rotten = JSON.parse(content3)
-                    result = jsonDiff.jsonDiff(ripe, rotten)
+          if (content == '') {
+            content = '[]'
+            fs.writeFile('./twitter/jobsRipe.json', content, (err) => {
+              console.log('Jobs file created.')
+            })
+          } else {
+            fs.writeFile('./twitter/jobsRotten.json', content, (err) => {
+              if (!err) {
+                // Overwrite new 'jobsRipe'
+                fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                  fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content2) => {
+                    const ripe = JSON.parse(content2)
+                    fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content3) => {
+                      try {
+                        const rotten = JSON.parse(content3)
+                        const result = jsonDiff.jsonDiff(ripe, rotten)
 
-                    console.log('Twitter updated!')
+                        console.log('Twitter updated!')
 
-                    if (result.code == 2)
-                      console.log(result.jobs[0])
+                        if (result.code == 2)
+                          console.log(result.jobs[0])
 
-                    let listingData = {
-                      org: 'Twitter',
-                      orgResults: result,
-                    }
+                        let listingData = {
+                          org: 'Twitter',
+                          orgResults: result,
+                        }
 
-                    scrapeGoat.push(listingData)
-                    resolve()
+                        scrapeGoat.push(listingData)
+                        resolve()
+                      } catch {
+                        console.log(err)
+                        fs.writeFile('./twitter/error-out.txt', content2, () => {
+                          console.log('Likely a JSON parse error, see error-out.txt')
+                        })
+                      }
+                    })
                   })
                 })
-              })
-            }
-          })
+              }
+            })
+          }
         })
       }
     })
@@ -211,36 +221,47 @@ function google(req, res, resolve) {
       // Write 'jobsRipe' to 'jobsRotten'...
       fs.readFile('./google/jobsRipe.json', 'utf8', (err, content) => {
         if (content == '') {
-          fs.writeFile('./google/jobsRipe.json', '[]', (err) => { console.log('file created') })
-        }
-        fs.writeFile('./google/jobsRotten.json', content, (err) => {
-          if (!err) {
-            // Overwrite new 'jobsRipe'
-            fs.writeFile('google/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
-              let ripe, rotten, result;
-              fs.readFile('./google/jobsRipe.json', 'utf8', (err, content2) => {
-                ripe = JSON.parse(content2)
-                fs.readFile('./google/jobsRotten.json', 'utf8', (err, content3) => {
-                  rotten = JSON.parse(content3)
-                  result = jsonDiff.jsonDiff(ripe, rotten)
+          content = '[]'
+          fs.writeFile('./google/jobsRipe.json', content, (err) => {
+            console.log('Jobs file created')
+          })
+        } else {
+          fs.writeFile('./google/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('./google/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./google/jobsRipe.json', 'utf8', (err, content2) => {
+                  const ripe = JSON.parse(content2)
+                  fs.readFile('./google/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten)
 
-                  console.log('Google updated!')
+                      console.log('Google updated!')
 
-                  if (result.code == 2)
-                    console.log(result.jobs[0])
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
 
-                  let listingData = {
-                    org: 'Google',
-                    orgResults: result,
-                  }
+                      let listingData = {
+                        org: 'Google',
+                        orgResults: result,
+                      }
 
-                  scrapeGoat.push(listingData)
-                  resolve()
+                      scrapeGoat.push(listingData)
+                    } catch (err) {
+                      console.log(err)
+                      fs.writeFile('./google/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                      })
+                    }
+
+                    resolve()
+                  })
                 })
               })
-            })
-          }
-        })
+            }
+          })
+        }
       })
     }
   }).catch((err) => {
