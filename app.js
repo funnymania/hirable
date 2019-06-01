@@ -94,7 +94,7 @@ app.get('/', (req, res) => {
     req,
     res,
     1000,
-    // twitter,
+    twitter,
     google,
   )
 })
@@ -381,8 +381,11 @@ function unity(req, res) {
 function groupToMail(listingResults) {
   let emailBody = ''
   listingResults.forEach((result) => {
-    if (result.orgResults.code == 2 || result.orgResults.code == 1) {
-      let titleString = '<h3>' + result.org + '</h3>'
+    if (
+      (result.orgResults.code == 2 || result.orgResults.code == 1)
+      && result.org != 'Twitter'
+    ) {
+      let titleString = '<h2>' + result.org + '</h2>'
       let bodyString = ''
       result.orgResults.jobs.forEach((el) => {
         bodyString += '<h4>' + el.title + '</h4>'
