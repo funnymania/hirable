@@ -152,6 +152,8 @@ function twitter(req, res, resolve) {
         })
         // TODO: Topple pyramid of doom into something else... 
         // Write 'jobsRipe' to 'jobsRotten'...
+        // BUG: I believe something here is responsible for the emails in which
+        //    the same 2 jobs are being reported as new in a neverending cycle
         fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
           if (err) {
             fs.writeFile('./twitter/jobsRipe.json', '[]', (err) => { console.log('Jobs file created.') })

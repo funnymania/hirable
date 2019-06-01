@@ -15,7 +15,7 @@ function jsonDiff(one, two) {
     if (!el1Present) {
       newList.push(el1)
     } else {
-      el1Present = true
+      el1Present = false
     }
   })
 
