@@ -44,6 +44,7 @@ const URLmatcher = {
   facebook: 'https://www.facebook.com/careers/jobs?page=1&results_per_page=100&teams[0]=Software%20Engineering&locations[0]=Seattle%2C%20WA',
   snapchat: 'https://wd1.myworkdaysite.com/recruiting/snapchat/snap/4/refreshFacet/318c8bb6f553100021d223d9780d30be?clientRequestID=5074d16694f04b49aa529ffb4579545a',
   twitch: 'https://jobs.lever.co/twitch?location=Seattle%2C%20WA',
+  airbnb: 'https://careers.airbnb.com/wp-admin/admin-ajax.php?action=fetch_greenhouse_jobs&which-board=airbnb&strip-empty=true',
 }
 
 let userEmail, userData;
@@ -116,6 +117,7 @@ app.get('/apple', (req, res) => theGrandLoop(req, res, 1000, apple))
 app.get('/facebook', (req, res) => theGrandLoop(req, res, 1000, facebook))
 app.get('/snapchat', (req, res) => theGrandLoop(req, res, 1000, snapchat))
 app.get('/twitch', (req, res) => theGrandLoop(req, res, 1000, twitch))
+app.get('/airbnb', (req, res) => theGrandLoop(req, res, 1000, airbnb))
 
 // Big boys.
 // TODO: Separate each listing into its own separate file. 
@@ -725,19 +727,93 @@ function twitch(req, res, resolve) {
 }
 
 // Unicorns.
-function wework(req, res) {
+function bytedance(req, res) {
 
 }
 
-function bytedance(req, res) {
+function airbnb(req, res, resolve) {
+  let url = URLmatcher.airbnb
+  let jobRecording = []
 
+  rp(url, (error, response, html) => {
+    if (!error) {
+      jsonData = JSON.parse(html)
+      jsonData.jobs.forEach((el) => {
+        if (
+          el.location == 'Seattle, United States'
+          && (el.title.includes('engineer')
+            || el.title.includes('Engineer')
+            || el.title.includes('developer')
+            || el.title.includes('Developer'))
+        ) {
+          jobRecording.push({
+            title: el.title,
+            desc: '',
+          })
+        }
+      })
+
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./airbnb/jobsRipe.json', 'utf8', (err, content) => {
+        if (content == '') {
+          fs.writeFile('./airbnb/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs file created')
+          })
+        } else {
+          fs.writeFile('./airbnb/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('./airbnb/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./airbnb/jobsRipe.json', 'utf8', (err, content2) => {
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
+                  fs.readFile('./airbnb/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, true)
+
+                      console.log('Airbnb updated!')
+
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
+
+                      let listingData = {
+                        org: 'Airbnb',
+                        orgResults: result,
+                      }
+
+                      scrapeGoat.push(listingData)
+                      resolve()
+                    } catch (error) {
+                      console.log(error)
+                      fs.writeFile('./airbnb/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
+                      })
+                    }
+                  })
+                })
+              })
+            }
+          })
+        }
+      })
+    }
+  }).catch((err) => {
+    console.log(err)
+  })
 }
 
 function stripe(req, res) {
 
 }
 
-function airbnb(req, res) {
+function wework(req, res) {
 
 }
 
