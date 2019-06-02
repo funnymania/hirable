@@ -45,6 +45,7 @@ const URLmatcher = {
   snapchat: 'https://wd1.myworkdaysite.com/recruiting/snapchat/snap/4/refreshFacet/318c8bb6f553100021d223d9780d30be?clientRequestID=5074d16694f04b49aa529ffb4579545a',
   twitch: 'https://jobs.lever.co/twitch?location=Seattle%2C%20WA',
   airbnb: 'https://careers.airbnb.com/wp-admin/admin-ajax.php?action=fetch_greenhouse_jobs&which-board=airbnb&strip-empty=true',
+  uber: 'https://www.uber.com/us/en/careers/list/?query=engineer&location=USA-Washington-Seattle'
 }
 
 let userEmail, userData;
@@ -119,6 +120,7 @@ app.get('/facebook', (req, res) => theGrandLoop(req, res, 1000, facebook))
 app.get('/snapchat', (req, res) => theGrandLoop(req, res, 1000, snapchat))
 app.get('/twitch', (req, res) => theGrandLoop(req, res, 1000, twitch))
 app.get('/airbnb', (req, res) => theGrandLoop(req, res, 1000, airbnb))
+app.get('/uber', (req, res) => theGrandLoop(req, res, 1000, uber))
 
 // Big boys.
 // TODO: Separate each listing into its own separate file. 
@@ -404,8 +406,90 @@ function apple(req, res, resolve) {
   })
 }
 
-function uber(req, res) {
+function uber(req, res, resolve) {
+  let url = URLmatcher.uber
+  let jobRecording = []
 
+  const reqObj = {
+    url: url,
+    headers: {
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      Cookie: 'marketing_vistor_id=e09c8424-8f69-4b66-9123-fd14c9d6d57b; optimizelyEndUserId=oeu1555300274005r0.822488931817; utag_main=v_id:016a1f1ed720000344d64c9a31190004e001b00d00aa4$_sn:14$_ss:1$_st:1559465607585$segment:a$optimizely_segment:a$ses_id:1559463807585%3Bexp-session$_pn:1%3Bexp-session; segmentCookie=a; AMCV_0FEC8C3E55DB4B027F000101%40AdobeOrg=1611084164%7CMCMID%7C85431986235142887220002976465472918517%7CMCAID%7CNONE%7CMCOPTOUT-1556819609s%7CNONE; _gcl_au=1.1.852098294.1556812381; uber_sites_geolocalization={%22best%22:{%22localeCode%22:%22en%22%2C%22territoryId%22:10%2C%22territoryName%22:%22Seattle%22}%2C%22url%22:{%22localeCode%22:%22en%22%2C%22countryCode%22:%22US%22}%2C%22user%22:{%22countryCode%22:%22US%22%2C%22territoryId%22:10%2C%22territoryGeoJson%22:[[{%22lat%22:48.299232%2C%22lng%22:-122.541068}%2C{%22lat%22:48.299232%2C%22lng%22:-120.906211}%2C{%22lat%22:47.084457%2C%22lng%22:-120.906211}%2C{%22lat%22:47.084457%2C%22lng%22:-122.541068}]]%2C%22territoryGeoPoint%22:{%22latitude%22:47.6062095%2C%22longitude%22:-122.3320708}%2C%22localeCode%22:%22en%22%2C%22territorySlug%22:%22seattle%22%2C%22territoryName%22:%22Seattle%22}}; _RCRTX03=816e79da79a011e9ae6bf376c14fc0048a8e26a06bbe49b6bc5d6b51e90e63ff; rx_jobid=36794; web-careers:sess=EPSzi2ZUvfl-stAZ2UOWfA.gLKyDBlorprv06oHrvj9k4_Q67WtlNEAvhfZcS7wx3lKZe-XQOrcPch5DmGBLamePmFPeTp3XiF6BTT8gGAHGSIDRh46xrB9gCl6qsOOM9DMtw58bCX3CbJIMG2OCMk9j4CztFpUKaueE9wZQN9fggQCwA7-KsYOwrQFAJqBBHAGW0DtOEWBkYBVCKqM06wnt8OqWz2tmEQUt2v1RCsFkA.1558971450040.1209600000.0W9jw1FoRFB5gZoypQY5GunclV4_mVgKjC_iJT0AYB8; uber-com:sess=C1hdm94pcWK3R1TIiwq5HQ.3HHXlkfafEqZq1FtbwGXl3dv2W5LTXvF6NZmQFPT0DmV9TBZKbrk0rJpkwQrEbLl0yhmLHxpL6wL9LNjYWXuD0VllCFChK5Q-CT_qwa5kbY8YloA_WYINST5kcN3rfFCU5KeAkbdf8THoTlVeFd1cV371qxzKVNWtjhiOQ4ncPh51kLYe5cd0pyVt0SdMgd1.1558971456000.1209600000.XicWck1UJKYuSGl9x75iu-34YS0LwzdSYR5iIwkC-Sg; AMCVS_0FEC8C3E55DB4B027F000101%40AdobeOrg=1; _ua={"session_id":"0614c28e-42c1-4c4a-a3a5-d15f3ec5332f","session_time_ms":1555300275027}; geo_city_id=10; gs_city_id=10; cookies.js=1; gs_code=ogsoct17ton; QSI_HistorySession=https%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2F~1558937231770%7Chttps%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2Flocations%2Fseattle%2F~1558937242916%7Chttps%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2Flist%2F%3Flocation%3DUSA-Washington-Seattle~1558937255111%7Chttps%3A%2F%2Fwww.uber.com%2Fglobal%2Fen%2Fcareers%2Flist%2F50798%2F~1558971364155%7Chttps%3A%2F%2Fwww.uber.com%2Fglobal%2Fen%2Fcareers%2Flist%2F50019%2F~1558971366489%7Chttps%3A%2F%2Fwww.uber.com%2Fglobal%2Fen%2Fcareers%2Flist%2F49499%2F~1558971370630%7Chttps%3A%2F%2Fwww.uber.com%2Fglobal%2Fen%2Fcareers%2Flist%2F50798%2F~1558971885935%7Chttps%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2Flist%2F%3Flocation%3DUSA-Washington-Seattle~1559080390329%7Chttps%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2F~1559142698979%7Chttps%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2Flist%2F%3Fquery%3Dengineer~1559142748914%7Chttps%3A%2F%2Fwww.uber.com%2Fglobal%2Fen%2Fcareers%2Flist%2F46816%2F~1559142792249%7Chttps%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2Flist%2F%3Fquery%3Dengineer~1559163477393%7Chttps%3A%2F%2Fwww.uber.com%2Fus%2Fen%2Fcareers%2Flist%2F%3Fquery%3Dengineer%26location%3DUSA-Washington-Seattle~1559185246107; jwt-session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1NTk0NjM4MDQsImV4cCI6MTU1OTU1MDIwNH0.fqlRoY_6JJqL2idtvGt79NJtw1pZz-4jDf-1MJJPbic'
+    }
+  }
+
+  rp(reqObj, (error, response, html) => {
+    if (!error) {
+      let $ = cheerio.load(html)
+      $('.c5.dr.jd.oa').each((i, el) => {
+        let jobTitle = $(el).find('a').text()
+
+        if (
+          jobTitle.includes('engineer')
+          || jobTitle.includes('Engineer')
+          || jobTitle.includes('developer')
+          || jobTitle.includes('Developer')
+        ) {
+          let jobDesc = jobTitle
+          jobRecording.push({
+            title: jobTitle,
+            desc: jobDesc
+          })
+        }
+      })
+      // TODO: Topple pyramid of doom into something else... 
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./uber/jobsRipe.json', 'utf8', (err, content) => {
+        if (content == '') {
+          fs.writeFile('./uber/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs file created.')
+          })
+        } else {
+          fs.writeFile('./uber/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('./uber/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./uber/jobsRipe.json', 'utf8', (err, content2) => {
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
+                  fs.readFile('./uber/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, true)
+
+                      console.log('Uber updated!')
+
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
+
+                      let listingData = {
+                        org: 'Uber',
+                        orgResults: result,
+                      }
+
+                      scrapeGoat.push(listingData)
+                      resolve()
+                    } catch (error) {
+                      console.log(error)
+                      fs.writeFile('./uber/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
+                      })
+                    }
+                  })
+                })
+              })
+            }
+          })
+        }
+      })
+    }
+  })
 }
 // myworkday
 function snapchat(req, res, resolve) {
