@@ -199,7 +199,13 @@ function twitter(req, res, resolve) {
                   // Overwrite new 'jobsRipe'
                   fs.writeFile('twitter/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
                     fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content2) => {
-                      const ripe = JSON.parse(content2)
+                      let ripe
+                      try {
+                        ripe = JSON.parse(content2)
+                      } catch (error) {
+                        console.error(error)
+                        resolve()
+                      }
                       fs.readFile('./twitter/jobsRotten.json', 'utf8', (err, content3) => {
                         try {
                           const rotten = JSON.parse(content3)
@@ -217,10 +223,11 @@ function twitter(req, res, resolve) {
 
                           scrapeGoat.push(listingData)
                           resolve()
-                        } catch {
-                          console.log(err)
+                        } catch (error) {
+                          console.log(error)
                           fs.writeFile('./twitter/error-out.txt', content2, () => {
                             console.log('Likely a JSON parse error, see error-out.txt')
+                            resolve()
                           })
                         }
                       })
@@ -265,7 +272,13 @@ function google(req, res, resolve) {
               // Overwrite new 'jobsRipe'
               fs.writeFile('./google/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
                 fs.readFile('./google/jobsRipe.json', 'utf8', (err, content2) => {
-                  const ripe = JSON.parse(content2)
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
                   fs.readFile('./google/jobsRotten.json', 'utf8', (err, content3) => {
                     try {
                       const rotten = JSON.parse(content3)
@@ -282,14 +295,14 @@ function google(req, res, resolve) {
                       }
 
                       scrapeGoat.push(listingData)
-                    } catch (err) {
-                      console.log(err)
+                      resolve()
+                    } catch (error) {
+                      console.log(error)
                       fs.writeFile('./google/error-out.txt', content2, () => {
                         console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
                       })
                     }
-
-                    resolve()
                   })
                 })
               })
@@ -343,7 +356,13 @@ function apple(req, res, resolve) {
               // Overwrite new 'jobsRipe'
               fs.writeFile('apple/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
                 fs.readFile('./apple/jobsRipe.json', 'utf8', (err, content2) => {
-                  const ripe = JSON.parse(content2)
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
                   fs.readFile('./apple/jobsRotten.json', 'utf8', (err, content3) => {
                     try {
                       const rotten = JSON.parse(content3)
@@ -409,7 +428,13 @@ function snapchat(req, res, resolve) {
               // Overwrite new 'jobsRipe'
               fs.writeFile('snapchat/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
                 fs.readFile('./snapchat/jobsRipe.json', 'utf8', (err, content2) => {
-                  const ripe = JSON.parse(content2)
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
                   fs.readFile('./snapchat/jobsRotten.json', 'utf8', (err, content3) => {
                     try {
                       const rotten = JSON.parse(content3)
@@ -475,7 +500,13 @@ function amazon(req, res, resolve) {
               // Overwrite new 'jobsRipe'
               fs.writeFile('./amazon/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
                 fs.readFile('./amazon/jobsRipe.json', 'utf8', (err, content2) => {
-                  const ripe = JSON.parse(content2)
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
                   fs.readFile('./amazon/jobsRotten.json', 'utf8', (err, content3) => {
                     try {
                       const rotten = JSON.parse(content3)
@@ -492,14 +523,14 @@ function amazon(req, res, resolve) {
                       }
 
                       scrapeGoat.push(listingData)
-                    } catch (err) {
-                      console.log(err)
+                      resolve()
+                    } catch (error) {
+                      console.log(error)
                       fs.writeFile('./amazon/error-out.txt', content2, () => {
                         console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
                       })
                     }
-
-                    resolve()
                   })
                 })
               })
@@ -549,7 +580,13 @@ function facebook(req, res, resolve) {
               // Overwrite new 'jobsRipe'
               fs.writeFile('facebook/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
                 fs.readFile('./facebook/jobsRipe.json', 'utf8', (err, content2) => {
-                  const ripe = JSON.parse(content2)
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
                   fs.readFile('./facebook/jobsRotten.json', 'utf8', (err, content3) => {
                     try {
                       const rotten = JSON.parse(content3)
