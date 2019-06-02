@@ -115,6 +115,7 @@ app.get('/amazon', (req, res) => theGrandLoop(req, res, 1000, amazon))
 app.get('/apple', (req, res) => theGrandLoop(req, res, 1000, apple))
 app.get('/facebook', (req, res) => theGrandLoop(req, res, 1000, facebook))
 app.get('/snapchat', (req, res) => theGrandLoop(req, res, 1000, snapchat))
+app.get('/twitch', (req, res) => theGrandLoop(req, res, 1000, twitch))
 
 // Big boys.
 // TODO: Separate each listing into its own separate file. 
