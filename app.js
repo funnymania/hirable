@@ -109,6 +109,7 @@ app.get('/', (req, res) => {
     // snapchat,
     twitch,
     airbnb,
+    uber,
   )
 })
 
