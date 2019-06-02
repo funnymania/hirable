@@ -41,6 +41,8 @@ const URLmatcher = {
     + locMaps.google + '&q=engineer&sort_by=date',
   amazon: 'https://www.amazon.jobs/en/search.json?base_query=&category[]=software-development&city=&country=&county=&facets[]=location&facets[]=business_category&facets[]=category&facets[]=schedule_type_id&facets[]=employee_class&facets[]=normalized_location&facets[]=job_function_id&latitude=&loc_group_id=&loc_query=&longitude=&offset=0&query_options=&radius=24km&region=&result_limit=20&sort=recent',
   apple: 'https://jobs.apple.com/en-us/search?sort=newest&location=seattle-SEA',
+  facebook: 'https://www.facebook.com/careers/jobs?page=1&results_per_page=100&teams[0]=Software%20Engineering&locations[0]=Seattle%2C%20WA',
+  snapchat: 'https://wd1.myworkdaysite.com/recruiting/snapchat/snap/4/refreshFacet/318c8bb6f553100021d223d9780d30be',
 }
 
 let userEmail, userData;
@@ -77,7 +79,7 @@ function theGrandLoop(req, res, interval, ...unicorns) {
     })
 
     Promise.all(promisedCorns).then(() => {
-      console.log('A scrape completed.')
+      console.log('A scrape completed.\n------------------------------')
 
       // Group all reports into one email
       if (scrapeGoat.length != 0) {
@@ -100,6 +102,8 @@ app.get('/', (req, res) => {
     google,
     amazon,
     apple,
+    facebook,
+    // snapchat,
   )
 })
 
@@ -107,7 +111,8 @@ app.get('/twitter', (req, res) => theGrandLoop(req, res, 1000, twitter))
 app.get('/google', (req, res) => theGrandLoop(req, res, 1000, google))
 app.get('/amazon', (req, res) => theGrandLoop(req, res, 1000, amazon))
 app.get('/apple', (req, res) => theGrandLoop(req, res, 1000, apple))
-
+app.get('/facebook', (req, res) => theGrandLoop(req, res, 1000, facebook))
+app.get('/snapchat', (req, res) => theGrandLoop(req, res, 1000, snapchat))
 
 // Big boys.
 // TODO: Separate each listing into its own separate file. 
@@ -377,9 +382,67 @@ function apple(req, res, resolve) {
 function uber(req, res) {
 
 }
+// myworkday
+function snapchat(req, res, resolve) {
+  let url = URLmatcher.snapchat
+  let jobRecording = []
+  // data.body.children[0].children[0].listItems
+  rp(url, (error, response, html) => {
+    if (!error) {
+      jsonData = JSON.parse(html)
+      jsonData.body.children[0].children[0].listItems.forEach((el) => {
+        jobRecording.push({
+          title: el.title.instances[0].text,
+          desc: el.title.instances[0].text,
+        })
+      })
+      // TODO: Topple pyramid of doom into something else... 
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./snapchat/jobsRipe.json', 'utf8', (err, content) => {
+        if (content == '') {
+          fs.writeFile('./snapchat/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs file created.')
+          })
+        } else {
+          fs.writeFile('./snapchat/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('snapchat/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./snapchat/jobsRipe.json', 'utf8', (err, content2) => {
+                  const ripe = JSON.parse(content2)
+                  fs.readFile('./snapchat/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, false)
 
-function snapchat(req, res) {
+                      console.log('Snapchat updated!')
 
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
+
+                      let listingData = {
+                        org: 'Snapchat',
+                        orgResults: result,
+                      }
+
+                      scrapeGoat.push(listingData)
+                      resolve()
+                    } catch {
+                      console.log(err)
+                      fs.writeFile('./snapchat/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
+                      })
+                    }
+                  })
+                })
+              })
+            }
+          })
+        }
+      })
+    }
+  })
 }
 
 function splunk(req, res) {
@@ -450,8 +513,76 @@ function amazon(req, res, resolve) {
   })
 }
 
-function facebook(req, res) {
+function facebook(req, res, resolve) {
+  let url = URLmatcher.facebook
+  let jobRecording = []
 
+  rp(url, (error, response, html) => {
+    if (!error) {
+      let $ = cheerio.load(html)
+      $('._25w_ _69fb _31bb _25w- _1icm').each((i, el) => {
+        let jobTitle = $(el).children('._69jo').text()
+
+        if (
+          jobTitle.includes('engineer')
+          || jobTitle.includes('Engineer')
+          || jobTitle.includes('developer')
+          || jobTitle.includes('Developer')
+        ) {
+          let jobDesc = ''
+          jobRecording.push({
+            title: jobTitle,
+            desc: jobDesc
+          })
+        }
+      })
+      // TODO: Topple pyramid of doom into something else... 
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./facebook/jobsRipe.json', 'utf8', (err, content) => {
+        if (content == '') {
+          fs.writeFile('./facebook/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs file created.')
+          })
+        } else {
+          fs.writeFile('./facebook/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('facebook/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./facebook/jobsRipe.json', 'utf8', (err, content2) => {
+                  const ripe = JSON.parse(content2)
+                  fs.readFile('./facebook/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, false)
+
+                      console.log('Facebook updated!')
+
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
+
+                      let listingData = {
+                        org: 'Facebook',
+                        orgResults: result,
+                      }
+
+                      scrapeGoat.push(listingData)
+                      resolve()
+                    } catch {
+                      console.log(err)
+                      fs.writeFile('./facebook/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
+                      })
+                    }
+                  })
+                })
+              })
+            }
+          })
+        }
+      })
+    }
+  })
 }
 
 function lyft(req, res) {
