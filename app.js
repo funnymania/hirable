@@ -42,7 +42,8 @@ const URLmatcher = {
   amazon: 'https://www.amazon.jobs/en/search.json?base_query=&category[]=software-development&city=&country=&county=&facets[]=location&facets[]=business_category&facets[]=category&facets[]=schedule_type_id&facets[]=employee_class&facets[]=normalized_location&facets[]=job_function_id&latitude=&loc_group_id=&loc_query=&longitude=&offset=0&query_options=&radius=24km&region=&result_limit=20&sort=recent',
   apple: 'https://jobs.apple.com/en-us/search?sort=newest&location=seattle-SEA',
   facebook: 'https://www.facebook.com/careers/jobs?page=1&results_per_page=100&teams[0]=Software%20Engineering&locations[0]=Seattle%2C%20WA',
-  snapchat: 'https://wd1.myworkdaysite.com/recruiting/snapchat/snap/4/refreshFacet/318c8bb6f553100021d223d9780d30be',
+  snapchat: 'https://wd1.myworkdaysite.com/recruiting/snapchat/snap/4/refreshFacet/318c8bb6f553100021d223d9780d30be?clientRequestID=5074d16694f04b49aa529ffb4579545a',
+  twitch: 'https://jobs.lever.co/twitch?location=Seattle%2C%20WA',
 }
 
 let userEmail, userData;
@@ -86,7 +87,7 @@ function theGrandLoop(req, res, interval, ...unicorns) {
         groupToMail(scrapeGoat)
         scrapeGoat = []
       }
-      interval = (30 * 1000) * (1 + Math.random())
+      interval = (35 * 1000) * (1 + Math.random())
       theGrandLoop(req, res, interval, ...unicorns)
     })
   }, interval)
@@ -104,6 +105,7 @@ app.get('/', (req, res) => {
     apple,
     facebook,
     // snapchat,
+    twitch,
   )
 })
 
@@ -354,7 +356,7 @@ function apple(req, res, resolve) {
           fs.writeFile('./apple/jobsRotten.json', content, (err) => {
             if (!err) {
               // Overwrite new 'jobsRipe'
-              fs.writeFile('apple/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+              fs.writeFile('./apple/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
                 fs.readFile('./apple/jobsRipe.json', 'utf8', (err, content2) => {
                   let ripe
                   try {
@@ -380,8 +382,8 @@ function apple(req, res, resolve) {
 
                       scrapeGoat.push(listingData)
                       resolve()
-                    } catch {
-                      console.log(err)
+                    } catch (error) {
+                      console.log(error)
                       fs.writeFile('./apple/error-out.txt', content2, () => {
                         console.log('Likely a JSON parse error, see error-out.txt')
                         resolve()
@@ -640,6 +642,85 @@ function square(req, res) {
 
 function adobe(req, res) {
 
+}
+// posting-title
+function twitch(req, res, resolve) {
+  let url = URLmatcher.twitch
+  let jobRecording = []
+
+  rp(url, (error, response, html) => {
+    if (!error) {
+      let $ = cheerio.load(html)
+      $('.posting-title').each((i, el) => {
+        let jobTitle = $(el).children('h5').text()
+
+        if (
+          jobTitle.includes('engineer')
+          || jobTitle.includes('Engineer')
+          || jobTitle.includes('developer')
+          || jobTitle.includes('Developer')
+        ) {
+          let jobDesc = $(el).children('.posting-categories')
+            .children('.sort-by-team').text().trim()
+          jobRecording.push({
+            title: jobTitle,
+            desc: jobDesc
+          })
+        }
+      })
+      // TODO: Topple pyramid of doom into something else... 
+      // Write 'jobsRipe' to 'jobsRotten'...
+      fs.readFile('./twitch/jobsRipe.json', 'utf8', (err, content) => {
+        if (content == '') {
+          fs.writeFile('./twitch/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+            console.log('Jobs file created.')
+          })
+        } else {
+          fs.writeFile('./twitch/jobsRotten.json', content, (err) => {
+            if (!err) {
+              // Overwrite new 'jobsRipe'
+              fs.writeFile('./twitch/jobsRipe.json', JSON.stringify(jobRecording, null, 4), (err) => {
+                fs.readFile('./twitch/jobsRipe.json', 'utf8', (err, content2) => {
+                  let ripe
+                  try {
+                    ripe = JSON.parse(content2)
+                  } catch (error) {
+                    console.log(error)
+                    resolve()
+                  }
+                  fs.readFile('./twitch/jobsRotten.json', 'utf8', (err, content3) => {
+                    try {
+                      const rotten = JSON.parse(content3)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, false)
+
+                      console.log('Twitch updated!')
+
+                      if (result.code == 2)
+                        console.log(result.jobs[0])
+
+                      let listingData = {
+                        org: 'Twitch',
+                        orgResults: result,
+                      }
+
+                      scrapeGoat.push(listingData)
+                      resolve()
+                    } catch (error) {
+                      console.log(error)
+                      fs.writeFile('./twitch/error-out.txt', content2, () => {
+                        console.log('Likely a JSON parse error, see error-out.txt')
+                        resolve()
+                      })
+                    }
+                  })
+                })
+              })
+            }
+          })
+        }
+      })
+    }
+  })
 }
 
 // Unicorns.
