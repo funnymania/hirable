@@ -107,6 +107,7 @@ app.get('/', (req, res) => {
     facebook,
     // snapchat,
     twitch,
+    airbnb,
   )
 })
 
@@ -837,13 +838,12 @@ function unity(req, res) {
 
 }
 
-// listingResults: org and orgResults
 // If there is a meaningful result, add to email
 function groupToMail(listingResults) {
   let emailBody = ''
   listingResults.forEach((result) => {
     if (
-      (result.orgResults.code == 2 || result.orgResults.code == 1)
+      (result.orgResults.code == 2 /* || result.orgResults.code == 1 */)
       && result.org != 'Twitter'
     ) {
       let titleString = '<h2>' + result.org + '</h2>'
