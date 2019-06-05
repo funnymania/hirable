@@ -89,7 +89,7 @@ function theGrandLoop(req, res, interval, ...unicorns) {
         groupToMail(scrapeGoat)
         scrapeGoat = []
       }
-      interval = (35 * 1000) * (1 + Math.random())
+      interval = (120 * 1000) * (1 + Math.random())
       theGrandLoop(req, res, interval, ...unicorns)
     })
   }, interval)
