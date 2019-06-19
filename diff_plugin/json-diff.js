@@ -1,11 +1,13 @@
-function jsonDiff(first, two, allowDupes) {
+function jsonDiff(one, two, allowDupes) {
   let el1Present = false
   let newList = []
-  let one
 
   one = !allowDupes
-    ? [...new Set(first)]
-    : first;
+    ? removeDuplicates(one)
+    : one;
+  two = !allowDupes
+    ? removeDuplicates(two)
+    : two;
 
   one.forEach((el1) => {
     for (let i = two.length - 1; i > -1; i--) {
@@ -48,6 +50,33 @@ function jsonDiff(first, two, allowDupes) {
       jobs: two
     }
   }
+}
+
+function removeDuplicates(arr) {
+  // Make a copy.
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] == undefined) {
+      continue;
+    }
+    for (let j = i + 1; j < arr.length; j++) {
+      if (arr[j] == undefined) {
+        continue;
+      }
+      if (arr[i].title == arr[j].title
+        && arr[i].desc == arr[j].desc
+      ) {
+        delete arr[j]
+      }
+    }
+  }
+  // Remove undefined.
+  return arr.filter((el) => {
+    if (el == undefined) {
+      return false
+    } else {
+      return true
+    }
+  });
 }
 
 module.exports = {

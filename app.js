@@ -72,7 +72,7 @@ fs.readFile('userEmail.txt', 'utf8', (err, content) => {
     })
   })
 })
-
+// TODO: This is not running every two - 4 minutes. It is running far more often. 
 function theGrandLoop(req, res, interval, ...unicorns) {
   setTimeout((req, res) => {
     let promisedCorns = unicorns.map((el) => {
@@ -109,7 +109,7 @@ app.get('/', (req, res) => {
     // snapchat,
     twitch,
     airbnb,
-    uber,
+    // uber,
   )
 })
 
