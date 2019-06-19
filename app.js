@@ -375,7 +375,7 @@ function apple(req, res, resolve) {
                   fs.readFile('./apple/jobsRotten.json', 'utf8', (err, content3) => {
                     try {
                       const rotten = JSON.parse(content3)
-                      const result = jsonDiff.jsonDiff(ripe, rotten, false)
+                      const result = jsonDiff.jsonDiff(ripe, rotten, true)
 
                       console.log('Apple updated!')
 
