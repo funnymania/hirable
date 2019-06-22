@@ -39,7 +39,7 @@ const URLmatcher = {
   ],
   google: 'https://careers.google.com/api/jobs/jobs-v1/search/?company=Google&company=Google%20Fiber&company=YouTube&employment_type=FULL_TIME&employment_type=PART_TIME&employment_type=TEMPORARY&hl=en_US&jlo=en_US&location='
     + locMaps.google + '&q=engineer&sort_by=date',
-  amazon: 'https://www.amazon.jobs/en/search.json?base_query=&category[]=software-development&city=&country=&county=&facets[]=location&facets[]=business_category&facets[]=category&facets[]=schedule_type_id&facets[]=employee_class&facets[]=normalized_location&facets[]=job_function_id&latitude=&loc_group_id=&loc_query=&longitude=&offset=0&query_options=&radius=24km&region=&result_limit=20&sort=recent',
+  amazon: 'https://www.amazon.jobs/en/search.json?base_query=&category[]=software-development&city=&country=&county=&facets[]=location&facets[]=business_category&facets[]=category&facets[]=schedule_type_id&facets[]=employee_class&facets[]=normalized_location&facets[]=job_function_id&latitude=&loc_group_id=&loc_query=&longitude=&normalized_location[]=Bellevue,+Washington,+USA&normalized_location[]=Seattle,+Washington,+USA&offset=0&query_options=&radius=24km&region=&result_limit=20&sort=recent',
   apple: 'https://jobs.apple.com/en-us/search?sort=newest&location=seattle-SEA',
   facebook: 'https://www.facebook.com/careers/jobs?page=1&results_per_page=100&teams[0]=Software%20Engineering&locations[0]=Seattle%2C%20WA',
   snapchat: 'https://wd1.myworkdaysite.com/recruiting/snapchat/snap/4/refreshFacet/318c8bb6f553100021d223d9780d30be?clientRequestID=5074d16694f04b49aa529ffb4579545a',
