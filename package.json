@@ -9,6 +9,7 @@
     "express": "latest",
     "nodemailer": "^6.2.1",
     "request": "latest",
-    "request-promise-native": "latest"
+    "request-promise-native": "latest",
+    "redis": "latest"
   }
 }
