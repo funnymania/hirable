@@ -251,7 +251,7 @@ function twitter(req, res, resolve) {
               })
             }
           })
-          // TODO: Topple pyramid of doom into something else... 
+
           // Write 'jobsRipe' to 'jobsRotten'...
           fs.readFile('./twitter/jobsRipe.json', 'utf8', (err, content) => {
             if (content == '') {
@@ -409,7 +409,7 @@ function apple(req, res, resolve) {
           })
         }
       })
-      // TODO: Topple pyramid of doom into something else... 
+
       // Write 'jobsRipe' to 'jobsRotten'...
       fs.readFile('./apple/jobsRipe.json', 'utf8', (err, content) => {
         if (content == '') {
@@ -495,7 +495,7 @@ function uber(req, res, resolve) {
           })
         }
       })
-      // TODO: Topple pyramid of doom into something else... 
+
       // Write 'jobsRipe' to 'jobsRotten'...
       fs.readFile('./uber/jobsRipe.json', 'utf8', (err, content) => {
         if (content == '') {
@@ -563,7 +563,7 @@ function snapchat(req, res, resolve) {
           desc: el.title.instances[0].text,
         })
       })
-      // TODO: Topple pyramid of doom into something else... 
+
       // Write 'jobsRipe' to 'jobsRotten'...
       fs.readFile('./snapchat/jobsRipe.json', 'utf8', (err, content) => {
         if (content == '') {
@@ -715,7 +715,7 @@ function facebook(req, res, resolve) {
           })
         }
       })
-      // TODO: Topple pyramid of doom into something else... 
+
       // Write 'jobsRipe' to 'jobsRotten'...
       fs.readFile('./facebook/jobsRipe.json', 'utf8', (err, content) => {
         if (content == '') {
@@ -814,7 +814,7 @@ function twitch(req, res, resolve) {
           })
         }
       })
-      // TODO: Topple pyramid of doom into something else... 
+
       // Write 'jobsRipe' to 'jobsRotten'...
       fs.readFile('./twitch/jobsRipe.json', 'utf8', (err, content) => {
         if (content == '') {
