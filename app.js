@@ -9,18 +9,18 @@ const redis = require('redis')
 const config = require('./.config/config.json')
 const app = express()
 
-const client = redis.createClient({
-  auth_pass: config.cacheAuth,
-  // tls: { checkServerIdentity: () => undefined }
-})
+// const client = redis.createClient({
+//   auth_pass: config.cacheAuth,
+//   // tls: { checkServerIdentity: () => undefined }
+// })
 
-client.on('connect', () => {
-  console.log('Redis connected')
-})
+// client.on('connect', () => {
+//   console.log('Redis connected')
+// })
 
-client.on('error', (err) => {
-  console.log('Redis error: ' + err)
-})
+// client.on('error', (err) => {
+//   console.log('Redis error: ' + err)
+// })
 
 const jsonDiff = require('./diff_plugin/json-diff')
 const mapMaker = require('./mappings/map-maker')
@@ -117,15 +117,15 @@ function supportedOrgs() {
 }
 
 function setOrgsInCache() {
-  fs.readFile('./.config/supportedOrgs.json', (err, data) => {
-    !err
-      ? client.set("supported-corns", data, (err, reply) => {
-        !err
-          ? console.log('Set supportedOrgs')
-          : console.log('Failed to set orgs in cache')
-      })
-      : console.log('Failed to read supportedOrgs.json')
-  })
+  // fs.readFile('./.config/supportedOrgs.json', (err, data) => {
+  //   !err
+  //     ? client.set("supported-corns", data, (err, reply) => {
+  //       !err
+  //         ? console.log('Set supportedOrgs')
+  //         : console.log('Failed to set orgs in cache')
+  //     })
+  //     : console.log('Failed to read supportedOrgs.json')
+  // })
 }
 
 // TODO: This is not running every two - 4 minutes. It is running far more often. 
