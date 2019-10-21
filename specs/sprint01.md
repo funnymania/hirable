@@ -1,8 +1,10 @@
 Web Service  
 [X] - Create Tables. Update them on rds.
 [X] - Define cron jobs  
-[ ] - supportedOrgs needs to be stored from database and grabbed in a sorted fashion (to allow binary-searching on clients)
-[ ] - Restful AddCorn service for all inserts w/ API token. This can take
+[X] - supportedOrgs needs to be stored from database and grabbed in a sorted fashion (to allow binary-searching on clients)
+[ ] - search API: (params can be role, orgname, location) /v1/cards
+[ ] - private insert_card: (API token, url, location, role)
+[ ] - makeOFficial: (create an API token, manually find comp in supported orgs or add if it doesnt exist). official_orgs can insert using their api token to associated orgid. 
 an optional userInfo parameter which can be used for custom results.
 [ ] - nodejs server will be running on ec2 instance
 
